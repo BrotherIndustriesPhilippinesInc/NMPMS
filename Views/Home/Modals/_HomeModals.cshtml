@@ -1,0 +1,354 @@
+﻿<!-- PMS CREATE MODAL -->
+<style>
+    /* ================= MODAL POLISH ================= */
+    #pmsModal .modal-content {
+      border-radius: 14px;
+      border: none;
+      box-shadow: 0 25px 60px rgba(0,0,0,.15);
+    }
+
+    #pmsModal .modal-header {
+      background: linear-gradient(135deg, #f8f9fa, #eef1f5);
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    #pmsModal .modal-footer {
+      border-top: none;
+    }
+
+    /* ================= SECTIONS ================= */
+    .pms-section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.06);
+      margin-bottom: 16px;
+    }
+
+    .pms-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      color: #343a40;
+    }
+
+    /* ================= ALIGNMENT FIX ================= */
+    #pmsModal .form-control,
+    #pmsModal .form-select {
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    #pmsModal textarea.form-control {
+      min-height: 140px;
+      height: auto;
+    }
+
+    #pmsModal .form-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #pmsModal .row.g-2 > [class*="col"] {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pmsModal input[type="file"].form-control-sm {
+      padding: 4px 8px;
+    }
+
+    /* ================= PHOTO ================= */
+    .photo-preview {
+      height: 190px;
+      border-radius: 12px;
+      border: 2px dashed #ced4da;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    /* ================= PHOTO PREVIEW GRID ================= */
+    .photo-preview {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .photo-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+
+    .photo-preview-grid img {
+      /* width: 300%; */
+      height: 190px;
+      object-fit: cover;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+
+    .photo-preview-placeholder {
+      color: #6c757d;
+      font-size: 0.85rem;
+    }
+
+    /* ================= CONTROL NUMBER ================= */
+    .control-box {
+      background: #f1f3f5;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-weight: 600;
+    }
+</style>
+<div class="modal fade" id="pmsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">New Model – Problem Management System</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <form id="pmsForm" enctype="multipart/form-data">
+                    <div class="container-fluid">
+
+                        <!-- TOP INFO -->
+                        <div class="pms-section">
+                            <div class="row align-items-end g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">PMS Create</label>
+                                    <select class="form-select form-select-sm mb-2" id="pms_create" name="pms_create">
+                                        <option value="">Select Process</option>
+                                        <option value="Cause Investigation">Cause Investigation</option>
+                                        <option value="Temporary Action">Temporary Action</option>
+                                        <option value="Permanent Action">Permanent Action</option>
+                                        <option value="Cancel">Cancel</option>
+                                    </select>
+
+                                    <input type="text"
+                                           class="form-control form-control-sm"
+                                           id="person_incharge"
+                                           value="Jeffrey Reyes"
+                                           disabled>
+                                </div>
+
+                                <div class="col-md-6 text-end">
+                                    <label class="form-label">Control Number</label><br>
+                                    <span class="control-box" id="control_no"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- LEFT -->
+                            <div class="col-md-6">
+                                <div class="pms-section">
+                                    <div class="pms-title">1. Phenomenon</div>
+
+                                    <label class="form-label">Problem Name *</label>
+                                    <input type="text" class="form-control form-control-sm mb-2"
+                                           id="problem_name" name="problem_name">
+
+                                    <label class="form-label">Phenomenon Details *</label>
+                                    @* <textarea class="form-control mb-3" id="phenomenon_details" name="phenomenon_details"></textarea> *@
+                                    <label class="form-label">Phenomenon Details *</label>
+
+                                    <div id="phenomenon_editor" class="form-control mb-2" style="min-height:200px;"></div>
+                                    <input type="hidden" id="phenomenon_details" name="phenomenon_details" />
+
+                                    <label class="form-label">Attachment</label>
+                                    <input type="file" class="form-control form-control-sm"
+                                           id="attachment" name="attachment">
+                                </div>
+                            </div>
+
+                            <!-- RIGHT -->
+                            <div class="col-md-6">
+                                <div class="pms-section">
+                                    <input type="hidden" name="model" id="model_hidden">
+                                    <input type="hidden" name="stage" id="stage_hidden">
+                                    <input type="hidden" name="control_no" id="control_no_hidden">
+                                    <label class="form-label">Problem Photos</label>
+                                    <div class="photo-preview mb-3" id="photoDrop">
+                                        Drag & Drop or Click to Upload
+                                    </div>
+
+                                    <input type="file" id="problem_photos" name="problem_photos[]" multiple accept="image/*" hidden>
+
+
+
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Stage</label>
+                                            <input class="form-control form-control-sm"
+                                                   id="selectedStage" disabled>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Model</label>
+                                            <input class="form-control form-control-sm"
+                                                   id="selectedModel" disabled>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Serial Number</label>
+                                            <input class="form-control form-control-sm"
+                                                   id="serial_number" name="serial_number">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Area of Detection</label>
+                                            <select class="form-select form-select-sm"
+                                                    id="area_detection" name="area_detection">
+                                                <option value="">Select Area</option>
+                                                <option value="Production">Production</option>
+                                                <option value="QA Inspection">QA Inspection</option>
+                                                <option value="Incoming Inspection">Incoming Inspection</option>
+                                                <option value="LC Warehouse">LC Warehouse</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Process</label>
+                                            <input class="form-control form-control-sm"
+                                                   id="process" name="process">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Issued By</label>
+                                            <input class="form-control form-control-sm"
+                                                   id="issued_by" name="issued_by">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Issued Date</label>
+                                            <input type="date" class="form-control form-control-sm"
+                                                   id="issued_date" name="issued_date">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pms-section">
+                                    <div class="pms-title">Parts Related</div>
+                                    <input type="text" class="form-control form-control-sm mb-1"
+                                           id="part_code" name="part_code" placeholder="Part Code">
+                                    <input type="text" class="form-control form-control-sm mb-1"
+                                           id="part_name" name="part_name" placeholder="Part Name">
+                                    <input type="text" class="form-control form-control-sm"
+                                           id="supplier" name="supplier" placeholder="Supplier">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary px-4" onclick="savePMS()">Create</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="createpmsModal" tabindex="-1" aria-labelledby="createpmsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="createpmsModalLabel">Create New</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recipient-name" class="col-form-label">Modal Name:</label>
+                        <input type="text" class="form-control" id="mName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message-text" class="col-form-label">Stage Name:</label>
+                        <input type="text" class="form-control" id="sName">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeModal">Close</button>
+                <button type="button" class="btn btn-primary" id="createnewBtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // const phenomenonEditor = new EditorJS({
+  //   holder: "phenomenon_editor",
+  //   placeholder: "Describe the phenomenon in detail...",
+  //   tools: {
+  //     header: {
+  //       class: Header,
+  //       inlineToolbar: true
+  //     },
+  //     list: {
+  //       class: List,
+  //       inlineToolbar: true
+  //     },
+  //     paragraph: {
+  //       class: Paragraph,
+  //       inlineToolbar: true
+  //     }
+  //   }
+  // });
+</script>
+<script>
+    let phenomenonEditor;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        phenomenonEditor = new EditorJS({
+            holder: 'phenomenon_editor',
+            placeholder: 'Describe the problem phenomenon in detail...',
+            autofocus: true,
+            tools: {
+                header: {
+                    class: Header,
+                    inlineToolbar: true
+                },
+                paragraph: {
+                    class: Paragraph,
+                    inlineToolbar: true
+                },
+                // list: {
+                //     class: List,
+                //     inlineToolbar: true
+                // },
+                table: Table,
+                quote: {
+                    class: Quote,
+                    inlineToolbar: true
+                },
+                delimiter: Delimiter,
+                linkTool: {
+                    class: LinkTool,
+                    config: {
+                        endpoint: '/Home/FetchUrl' // optional, remove if not using
+                    }
+                }
+            }
+        });
+
+    });
+</script>

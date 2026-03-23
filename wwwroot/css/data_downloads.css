@@ -1,0 +1,284 @@
+
+@keyframes shuttle-blink {
+  0%, 100% { opacity: 0.2; transform: scale(1); filter: brightness(1); }
+  50% { opacity: 1; transform: scale(1.05); filter: brightness(1.4); }
+}
+
+.shuttle-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  background: url('icons/downloaded-icons/shuttle.png') no-repeat center/contain;
+  opacity: 0.2;
+  transform: translate(-50%, -50%);
+  animation: shuttle-blink 3s infinite ease-in-out;
+  z-index: 0;
+}
+
+/* --- Main Card --- */
+.card {
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 25px rgba(0, 150, 255, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  /* background: rgba(20, 20, 35, 0.9); */
+  transition: 0.3s ease-in-out;
+}
+.card:hover {
+  box-shadow: 0 0 40px rgba(0, 150, 255, 0.6);
+}
+
+/* --- Header --- */
+.header-title {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #00aaff;
+  text-shadow: 0 0 10px #0077ff;
+  margin-bottom: 25px;
+  letter-spacing: 2px;
+}
+
+/* --- Grid Layout --- */
+.launcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+/* --- Each Button --- */
+.launcher-grid button {
+  background: linear-gradient(145deg, #1e1e2f, #282846);
+  border: 1px solid rgba(0, 200, 255, 0.1);
+  border-radius: 15px;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  padding: 30px 10px;
+  width: 100%;
+  box-shadow: 0 0 15px rgba(0, 150, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.launcher-grid button:hover {
+  transform: scale(1.08);
+  background: linear-gradient(145deg, #007bff, #00d4ff);
+  box-shadow: 0 0 25px rgba(0, 200, 255, 0.8);
+}
+
+/* --- Icon Hover Animation --- */
+.launcher-grid button img {
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+.launcher-grid button:hover img {
+  transform: scale(1.15) translateY(-5px);
+  filter: drop-shadow(0 0 10px #00d4ff);
+}
+
+/* --- Text --- */
+.launcher-grid button span {
+  display: block;
+  font-size: 1rem;
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+/* --- Animation Keyframes --- */
+@keyframes zoomInContent {
+  0% { transform: scale(0.2); opacity: 0; }
+  80% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* --- Dynamic Content Container --- */
+.content-container {
+  width: 100%;
+  min-height: 400px;
+  /* background: rgba(25, 25, 40, 0.95); */
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 15px;
+  overflow: hidden;
+  display: none;
+  transform-origin: top center;
+  z-index: 1;
+}
+
+/* --- Animated Show --- */
+.content-container.show {
+  display: block;
+  animation: zoomInContent 0.35s ease-in-out forwards;
+}
+
+/* --- Loading Spinner --- */
+.content-loader {
+  text-align: center;
+  padding: 50px 0;
+  color: #00aaff;
+}
+
+.pc-status{
+ border: 1px solid #4a4d5aff;
+ padding: 10px;
+ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+ margin-top: 5px;
+}
+
+/* --- Animation styling --- */
+.pc-status-container {
+  display: none; /* Hidden by default */
+}
+
+.pc-status-card {
+  transform: scale(0);
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.pc-status-card.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* --- Card layout --- */
+.pc-status img {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  width: 80%;
+  max-width: 150px;
+}
+
+.pc-details table {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* --- Toggle button --- */
+#togglePcStatus {
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+#togglePcStatus:hover {
+  transform: scale(1.05);
+}
+.battery {
+  position: relative;
+  width: 45px;
+  height: 20px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  margin: 5px auto;
+  overflow: hidden;
+  background-color: #e9ecef;
+}
+
+.battery::after {
+  /* battery tip */
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: -5px;
+  width: 4px;
+  height: 10px;
+  background-color: #333;
+  border-radius: 1px;
+}
+
+.battery-level {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  border-radius: 2px 0 0 2px;
+  background-color: #30b455;
+  transition: width 0.6s ease-in-out;
+}
+
+/* warning and alert colors */
+.battery-level.warn {
+  background-color: #EFAF13;
+}
+.battery-level.alert {
+  background-color: #e81309;
+}
+
+.battery-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 1px 1px 2px #fff;
+  pointer-events: none;
+}
+
+.lightning {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  font-size: 14px;
+  color: #f7e707;
+  text-shadow: 0 0 5px rgba(255,255,0,0.6);
+  animation: flash 0.5s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes flash {
+  from { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+table.dataTable thead th:nth-child(-n+4),
+table.dataTable tbody td:nth-child(-n+4),
+.dtfc-fixed-left {
+    background-color: white !important;
+    z-index: 4 !important;
+}
+
+/* fix overlap issue on scroll */
+.dtfc-fixed-left {
+    box-shadow: 2px 0 3px rgba(0, 0, 0, 0.05);
+}
+.pc-status img {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.pc-details table {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Keep hover style when tab is active */
+.launcher-grid button.active {
+  transform: scale(1.08);
+  background: linear-gradient(145deg, #007bff, #00d4ff);
+  box-shadow: 0 0 25px rgba(0, 200, 255, 0.8);
+}
+
+.launcher-grid button.active img {
+  transform: scale(1.15) translateY(-5px);
+  filter: drop-shadow(0 0 10px #00d4ff);
+}

@@ -1,0 +1,617 @@
+﻿<link href="~/css/home.css" rel="stylesheet" />
+<div class="modal fade" id="pmlModal" tabindex="-1">
+    <div class="modal-dialog modal-xxl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="fw-bold">Problem Management Log</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="scrollArea">
+                <div class="pms-details-wrap">
+                    <div class="pms-details">
+                        <div class="pms-title-line">
+                            <strong><span id="pms_control_no"></span></strong>
+                            <input type="hidden" id="control_no_input" name="control_no">
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Progress:</div>
+                            <div class="pms-value" id="progress"></div>
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Person In-Charge:</div>
+                            <div class="pms-value" id="pic"></div>
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Create Time:</div>
+                            <div class="pms-value" id="time"></div>
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Problem Title:</div>
+                            <div class="pms-value" id="title"></div>
+                        </div>
+
+                        <hr class="pms-divider">
+
+                        <div class="pms-section-title">Parts Related</div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Part Code:</div>
+                            <div class="pms-value" id="pms_part_code"></div>
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Part Name:</div>
+                            <div class="pms-value" id="pms_part_name"></div>
+                        </div>
+
+                        <div class="pms-row">
+                            <div class="pms-label">Supplier:</div>
+                            <div class="pms-value" id="pms_supplier_name"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-wrap">
+                    <div class="progress mb-2">
+                        <div id="progressBar" class="progress-bar bg-primary"></div>
+                    </div>
+                    <div class="step-nav">
+                        <button class="step-btn active" onclick="jump('s1',this)">1 Phenomenon</button>
+                        <button class="step-btn" onclick="jump('s2',this)">2 Analysis</button>
+                        <button class="step-btn" onclick="jump('s3',this)">3 Immediate</button>
+                        <button class="step-btn" onclick="jump('s4',this)">4 Temporary</button>
+                        <button class="step-btn" onclick="jump('s5',this)">5 Permanent</button>
+                        <button class="step-btn" onclick="jump('s6',this)">6 Horizontal</button>
+                        <button class="step-btn" onclick="jump('s7',this)">7 B-Action</button>
+                    </div>
+                </div>
+                @* <form id="pms_details"> *@
+                <!-- SECTIONS -->
+                <div id="s1" class="section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="bi bi-exclamation-circle"></i></div>
+                        <div class="section-title">Phenomenon</div>
+                    </div>
+                    <div class="card-glass">
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Problem Name</label>
+                                <input class="form-control mb-2" placeholder="Problem Name" id="pms_name">
+                                <label class="form-label">Details</label>
+                                <textarea class="form-control mb-2" placeholder="Details" id="pms_details"></textarea>
+                                <hr>
+                                <div class="mb-3">
+                                    <label class="form-label">Attachment File</label>
+                                    <div id="attachmentPreviewContainer" class="mb-2"></div>
+
+                                    <label class="form-label">Replace Attachment</label>
+                                    <input type="file" class="form-control" id="replace_attachment" style="width:100%" name="attachment">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                @* <div class="photo-box mb-3">Upload Photos</div> *@
+                                <div class="mb-3">
+                                    <label class="form-label">Uploaded Photo</label>
+                                    <div id="photoPreviewContainer" class="mb-2"></div>
+
+                                    <label class="form-label">Replace Photo</label>
+                                    <input type="file" class="form-control" id="replace_photo" name="problem_photos">
+                                </div>
+                                <div class="grid-2">
+                                    <label class="form-label">Stage</label>
+                                    <input class="form-control" placeholder="Stage" id="pms_stage">
+                                    <label class="form-label">Model</label>
+                                    <input class="form-control" placeholder="Model" id="pms_model">
+                                    <label class="form-label">Serial</label>
+                                    <input class="form-control" placeholder="Serial" id="pms_serial">
+                                    <label class="form-label">Area</label>
+                                    <input class="form-control" placeholder="Area" id="pms_area">
+                                    <label class="form-label">Process</label>
+                                    <input class="form-control" placeholder="Process" id="pms_process">
+                                    <label class="form-label">Issued By</label>
+                                    <input class="form-control" placeholder="Issued By" id="pms_issued_by">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repeat pattern -->
+                <div id="s2" class="section">
+                    <div class="section-header d-flex align-items-center mb-4">
+                        <div class="section-icon me-2"><i class="bi bi-search"></i></div>
+                        <div class="section-title h5 mb-0">Analysis</div>
+                    </div>
+
+                    <div class="card-glass p-4" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Analysis Cause -->
+                        <div class="form-group d-flex flex-column">
+                            <label for="analysis_cause" class="form-label">Analysis Cause</label>
+                            <input id="analysis_cause" class="form-control" placeholder="Enter analysis cause">
+                        </div>
+
+                        <!-- Defect Analysis Details -->
+                        <div class="form-group d-flex flex-column">
+                            <label for="defect_details" class="form-label">Defect Analysis Details</label>
+                            <textarea id="defect_details" class="form-control" placeholder="Enter defect details"></textarea>
+                        </div>
+
+                        <!-- Replace Attachment -->
+                        <div class="form-group d-flex flex-column">
+                            <div id="attachmentPreviewContainer1" class="mb-2"></div>
+                            <label for="defect_attachment" class="form-label">Attachment</label>
+                            <input type="file" class="form-control" id="defect_attachment" name="attachment">
+                            <input type="hidden" name="control_no" id="control_no_hidden">
+                        </div>
+
+                        <div class="form-group d-flex flex-column">
+                            <label class="form-label">Image Cause</label>
+                            <div class="photo-preview-placeholder mb-2" id="photoDrop_analysis" style="border: 2px dashed #ccc; padding: 1rem; text-align: center; cursor: pointer;">
+                                Drag & Drop or Click to Upload
+                            </div>
+                            <div id="photoPreviewContainer1" class="mb-2"></div>
+                            <input type="file" id="cause_photo" name="cause_photo[]" multiple accept="image/*" hidden>
+                        </div>
+
+                        <div class="form-group d-flex flex-column">
+                            <label for="problem_category" class="form-label">Problem Category</label>
+                            <select id="problem_category" class="form-control">
+                                <option selected>Problem Category</option>
+                                <option>Parts Problem</option>
+                                <option>Assembly Problem</option>
+                                <option>Design Project</option>
+                                <option>Machine Problem</option>
+                                <option>Others</option>
+                            </select>   
+                        </div>
+
+                        <!-- Analysis By -->
+                        <div class="form-group d-flex flex-column">
+                            <label for="analysis_by" class="form-label">Analysis By</label>
+                            <input id="analysis_by" class="form-control" placeholder="Enter name">
+                        </div>
+
+                        <!-- Finish Analysis Date -->
+                        <div class="form-group d-flex flex-column">
+                            <label for="finish_date" class="form-label">Finish Analysis Date</label>
+                            <input id="finish_date" class="form-control" type="date">
+                        </div> 
+
+                        <!-- Problem Rank -->
+                        <div class="form-group d-flex flex-column">
+                            <label for="problem_rank" class="form-label">Problem Rank</label>
+                            <select id="problem_rank" class="form-control">
+                                <option selected>Select Rank</option>
+                                <option>Fatal</option>
+                                <option>Heavy</option>
+                                <option>Fine</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="s3" class="section">
+
+                    <div class="section-header">
+                        <div class="section-icon"><i class="bi bi-lightning"></i></div>
+                        <div class="section-title">Immediate Action</div>
+                    </div>
+
+                    <!-- DETAILS -->
+                    <div class="card-glass grid-2">
+
+                        <div class="form-group">
+                            <label>Assembly</label>
+                            <textarea id="assembly" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parts</label>
+                            <textarea id="parts" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Machine</label>
+                            <textarea id="machine" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>System</label>
+                            <textarea id="system" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action By</label>
+                            <input id="detail_action_by" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attachment</label>
+                            <input id="detail_attachment" type="file" class="form-control">
+                        </div>
+
+                    </div>
+
+                    <!-- ACTION DETAILS -->
+                    <div class="card-glass grid-2">
+
+                        <div class="form-group">
+                            <label>FG Treatment</label>
+                            <input id="fg_treatment" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Process Change</label>
+                            <select id="process_change" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>WI Change</label>
+                            <select id="wi_change" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Re-education</label>
+                            <select id="re_education" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Change Manpower</label>
+                            <select id="change_manpower" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Other</label>
+                            <input id="other_action" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action By</label>
+                            <input id="action_by" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action Date</label>
+                            <input id="action_date" type="date" class="form-control">
+                        </div>
+
+                    </div>
+
+                    <!-- PARTS RELATED -->
+                    <div class="card-glass grid-2">
+                        <div class="form-group">
+                            <label>Parts Sorting</label>
+                            <select id="parts_sorting" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sorting Result</label>
+                            <input id="sorting_result" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Enough Stocks Qty</label>
+                            <input id="enough_stocks_qty" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Proceed in Trial</label>
+                            <select id="proceed_trial" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reason</label>
+                            <input id="trial_reason" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action By</label>
+                            <input id="parts_action_by" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action Date</label>
+                            <input id="parts_action_date" type="date" class="form-control">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="s4" class="section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="bi bi-clock"></i></div>
+                        <div class="section-title">Temporary Action</div>
+                    </div>
+
+                    <div class="card-glass grid-2">
+
+                        <div class="form-group">
+                            <label>Assembly</label>
+                            <textarea id="s4_assembly" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parts</label>
+                            <textarea id="s4_parts" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Machine</label>
+                            <textarea id="s4_machine" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>System</label>
+                            <textarea id="s4_system" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Action By</label>
+                            <input id="s4_detail_action_by" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attachment</label>
+                            <input id="s4_detail_attachment" type="file" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Implementation Date</label>
+                            <input id="implematation_Date" type="date" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Person In Charge</label>
+                            <input id="pic" type="text" class="form-control">
+                        </div>
+
+                    </div>
+                </div>
+                <div id="s5" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-shield-check"></i></div><div class="section-title">Permanent Action</div></div><div class="card-glass"><textarea class="form-control"></textarea></div></div>
+                <div id="s6" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-diagram-3"></i></div><div class="section-title">Horizontal Expansion</div></div><div class="card-glass grid-2"><input class="form-control"><input type="date" class="form-control"></div></div>
+                <div id="s7" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-check2-circle"></i></div><div class="section-title">B-Action</div></div><div class="card-glass grid-2"><input class="form-control"><input class="form-control"></div></div>
+
+            </div>
+
+            @* </form> *@
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" id="saveBtn">Save</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    const analysisPhotoDrop = document.getElementById('photoDrop_analysis');
+    const analysisPhotoInput = document.getElementById('cause_photo');
+
+    analysisPhotoDrop.addEventListener('click', () => analysisPhotoInput.click());
+
+    analysisPhotoDrop.addEventListener('dragover', e => {
+      e.preventDefault();
+      analysisPhotoDrop.classList.add('border-primary');
+    });
+
+    analysisPhotoDrop.addEventListener('dragleave', () => {
+      analysisPhotoDrop.classList.remove('border-primary');
+    });
+
+    analysisPhotoDrop.addEventListener('drop', e => {
+      e.preventDefault();
+      analysisPhotoDrop.classList.remove('border-primary');
+
+      analysisPhotoInput.files = e.dataTransfer.files;
+      previewAnalysisPhotos(analysisPhotoInput.files);
+    });
+
+    analysisPhotoInput.addEventListener('change', () => {
+      previewAnalysisPhotos(analysisPhotoInput.files);
+    });
+
+    function previewAnalysisPhotos(files) {
+      analysisPhotoDrop.innerHTML = '';
+
+      if (!files.length) {
+        analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload Analysis Photo</div>';
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'photo-preview-grid';
+
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          grid.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      analysisPhotoDrop.appendChild(grid);
+    }
+
+    document.getElementById('pmlModal').addEventListener('hidden.bs.modal', () => {
+      analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload Analysis Photo</div>';
+      analysisPhotoInput.value = '';
+    });
+    function previewAnalysisPhoto(file) {
+      const dropArea = document.getElementById('photoDrop_analysis');
+
+      if (!file || !file.type.startsWith('image/')) {
+        alert('Please select a valid analysis image file');
+        return;
+      }
+
+      dropArea.innerHTML = '';
+
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.style.height = '110px';
+      img.style.maxWidth = '100%';
+      img.classList.add('rounded', 'shadow-sm');
+
+      dropArea.appendChild(img);
+    }
+
+
+
+
+    const container = document.getElementById('scrollArea');
+    const sections = document.querySelectorAll('.section');
+    const buttons = document.querySelectorAll('.step-btn');
+    const bar = document.getElementById('progressBar');
+
+    let currentStep = 1;
+
+    function jump(id, btn){
+        document.getElementById(id).scrollIntoView({behavior:'smooth'});
+        buttons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStep = parseInt(id.replace("s",""));
+    }
+
+    container.addEventListener('scroll',()=>{
+      let index=0;
+      sections.forEach((s,i)=>{
+        if(container.scrollTop >= s.offsetTop-200) index=i;
+      });
+      buttons.forEach(b=>b.classList.remove('active'));
+      buttons[index]?.classList.add('active');
+      bar.style.width = ((index+1)/sections.length*100)+'%';
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", function(){
+
+        const formData = new FormData();
+
+        formData.append("step", currentStep);
+        formData.append("control_no", document.getElementById("control_no_input").value);
+
+        if(currentStep === 2){
+
+            formData.append("analysis_cause", document.getElementById("analysis_cause").value);
+            formData.append("defect_details", document.getElementById("defect_details").value);
+            formData.append("problem_category", document.getElementById("problem_category").value);
+            formData.append("analysis_by", document.getElementById("analysis_by").value);
+            formData.append("finish_date", document.getElementById("finish_date").value);
+            formData.append("problem_rank", document.getElementById("problem_rank").value);
+
+            const attachment = document.getElementById("defect_attachment").files[0];
+            if(attachment) formData.append("defect_attachment", attachment);
+
+            const photo = document.getElementById("cause_photo").files[0];
+            if(photo) formData.append("cause_photo", photo);
+        }
+
+        else if(currentStep == 3){
+
+            formData.append("analysis_cause", document.getElementById("analysis_cause").value);
+            formData.append("defect_details", document.getElementById("defect_details").value);
+            formData.append("problem_category", document.getElementById("problem_category").value);
+            formData.append("analysis_by", document.getElementById("analysis_by").value);
+            formData.append("finish_date", document.getElementById("finish_date").value);
+            formData.append("problem_rank", document.getElementById("problem_rank").value);
+
+            const attachment = document.getElementById("defect_attachment").files[0];
+            if(attachment) formData.append("defect_attachment", attachment);
+
+
+            // Immediate Action
+            formData.append("assembly", document.getElementById("assembly").value);
+            formData.append("parts", document.getElementById("parts").value);
+            formData.append("machine", document.getElementById("machine").value);
+            formData.append("system", document.getElementById("system").value);
+            formData.append("detail_action_by", document.getElementById("detail_action_by").value);
+
+            const detailFile = document.getElementById("detail_attachment").files[0];
+            if(detailFile) formData.append("detail_attachment", detailFile);
+
+            formData.append("fg_treatment", document.getElementById("fg_treatment").value);
+            formData.append("process_change", document.getElementById("process_change").value);
+            formData.append("wi_change", document.getElementById("wi_change").value);
+            formData.append("re_education", document.getElementById("re_education").value);
+            formData.append("change_manpower", document.getElementById("change_manpower").value);
+            formData.append("other_action", document.getElementById("other_action").value);
+            formData.append("action_by", document.getElementById("action_by").value);
+            formData.append("action_date", document.getElementById("action_date").value);
+
+            formData.append("parts_sorting", document.getElementById("parts_sorting").value);
+            formData.append("sorting_result", document.getElementById("sorting_result").value);
+            formData.append("enough_stocks_qty", document.getElementById("enough_stocks_qty").value);
+            formData.append("proceed_trial", document.getElementById("proceed_trial").value);
+            formData.append("trial_reason", document.getElementById("trial_reason").value);
+            formData.append("parts_action_by", document.getElementById("parts_action_by").value);
+            formData.append("parts_action_date", document.getElementById("parts_action_date").value);
+
+        }
+
+        else if(currentStep == 4){
+            formData.append("s4_assembly", document.getElementById("s4_assembly").value);
+            formData.append("s4_parts", document.getElementById("s4_parts").value);
+            formData.append("s4_machine", document.getElementById("s4_machine").value);
+            formData.append("s4_system", document.getElementById("s4_system").value);
+            formData.append("s4_detail_action_by", document.getElementById("s4_detail_action_by").value);
+            formData.append("implematation_Date", document.getElementById("implematation_Date").value);
+        }
+
+        fetch("/PMS/SaveStep", {
+            method:"POST",
+            body:formData
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            // alert(data.message);
+            // swal.fire({
+            //     icon: "success",
+            //     title: data.message
+            // })
+
+            if(data.message == "Invalid step"){
+                swal.fire({
+                    icon: "error",
+                    title: data.message
+                })
+            }else{
+                 swal.fire({
+                    icon: "success",
+                    title: data.message
+                })
+            }
+        });
+
+    });
+</script>

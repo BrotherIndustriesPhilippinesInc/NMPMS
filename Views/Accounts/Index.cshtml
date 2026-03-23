@@ -1,0 +1,166 @@
+﻿<style>
+    .avatar-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .avatar-img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%; /* makes it circle */
+        object-fit: cover; /* prevents stretching */
+        border: 2px solid #0d6efd; /* nice blue border */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* soft shadow */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .avatar-img:hover {
+            transform: scale(1.08); /* subtle zoom on hover */
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+        }
+</style>
+<div class="content-wrapper">
+    <section class="content pt-3">
+        <div class="container-fluid">
+
+            <div class="card shadow-sm border-0">
+
+                <!-- Header -->
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0 font-weight-bold">User Management</h4>
+                        <small class="text-muted">Manage system users</small>
+                    </div>
+
+                    <button class="btn btn-success px-4 openModal" data-target="#add-user" data-toggle="modal">
+                        Add User
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table id="usertbl" class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Img</th>
+                                    <th>ADID</th>
+                                    <th>Name</th>
+                                    <th>Section</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users_tbody">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="add-user">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+
+            <!-- Header -->
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus mr-2"></i> Register User
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body px-4">
+
+                <form method="POST" id="form_submit">
+
+                    <!-- ADID -->
+                    <div class="form-group">
+                        <label class="font-weight-bold">Employee Number</label>
+                        <input list="brow" class="form-control form-control-lg" name="biph_id" id="biph_id" required>
+                        <datalist id="brow">
+                            <!-- PHP LOOP -->
+                        </datalist>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Full Name</label>
+                            <input type="text" class="form-control" name="fullname" id="fullname" readonly style="color: white; background-color: dimgrey;">
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label>ADID</label>
+                            <input type="text" class="form-control" id="adid" name="adid" readonly style="color: white; background-color: dimgrey;">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" id="email" name="email" readonly style="color: white; background-color: dimgrey;">
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label>Position</label>
+                            <input type="text" class="form-control" id="position" name="position" readonly style="color: white; background-color: dimgrey;">
+                        </div>
+                    </div>
+
+                    <!-- Section -->
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Section</label>
+                            <input type="text" class="form-control" id="section" name="sectionN" readonly style="color: white; background-color: dimgrey;">
+                        </div>
+
+
+                        <div class="col-md-4 form-group">
+                            <label class="font-weight-bold">Authority</label>
+                            <select class="form-control" name="authority" id="authority" required>
+                                <option disabled selected>Select Authority</option>
+                                <option value="4">STAFF/ENGINEER</option>
+                                <option value="3">SPV</option>
+                                <option value="2">MGR</option>
+                                <option value="1">ADMIN</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Fields -->
+                    <input type="hidden" id="sectionID" name="sectionID">
+                    <input type="hidden" id="section_ams" name="section_ams">
+                    <input type="hidden" id="empNo" name="empNo">
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn btn-outline-secondary px-4" data-dismiss="modal">
+                    Cancel
+                </button>
+                <button  class="btn btn-success px-4" id="save_user">
+                    <i class="fas fa-save mr-1"></i> Register
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="~/js/pages_js/accounts.js" asp-append-version="true"></script>

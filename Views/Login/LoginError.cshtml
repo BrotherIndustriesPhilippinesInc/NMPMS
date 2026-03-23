@@ -1,0 +1,44 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login Error</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body style="background-color: #f8f9fa; padding-top: 50px;">
+<center>
+    <div class="card">
+        <div class="card-header" style="background: #009">
+            <span style="color:#FFDF00">Can't Proceed to Login!</span>
+        </div>
+        <div class="card-body">
+            <p class="card-text" style="color: #000080;font-weight: 600">
+                Sorry, no login request found in I-Portal!
+            </p>
+            <p class="card-text" style="color: #000080;font-weight: 600">
+                Kindly login to I-Portal first.
+            </p>
+            <p class="card-text" style="color: #000080;font-weight: 600">
+                If the I-Portal application is not yet installed on your computer, click the button below to install.
+            </p>
+            <p class="card-text" style="color: #000080;font-weight: 600">
+                (Click <span style="color:green;font-weight: 700">RE-LOGIN</span> after logging in to I-Portal)
+            </p>
+            <br>
+            <a target="_blank" href="http://apbiphbpswb01:8080/approval-system/Views/iportal-dashboard.php" class="btn btn-primary">
+                Open / Install I-Portal System
+            </a>
+        </div>
+        <div class="card-footer">
+            <span style="float: right; font-size: 12px; font-style: italic; color: black; padding-top: 20px;">
+                If you have any concerns, you may call BPS-Application group local no. 3407.
+            </span>
+        </div>
+    </div>
+</center>
+</body>
+</html>

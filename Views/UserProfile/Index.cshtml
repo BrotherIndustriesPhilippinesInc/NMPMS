@@ -1,0 +1,197 @@
+﻿<style>
+    /* CARD STYLE */
+    .card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.05);
+    }
+
+    /* PROFILE CARD */
+    .profile-card {
+        padding: 30px 20px;
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: auto;
+        border-radius: 50%;
+        padding: 5px;
+        background: linear-gradient(135deg, #0d6efd, #20c997);
+    }
+
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #fff;
+        object-fit: cover;
+        cursor: pointer;
+    }
+
+    /* Overlay */
+    .avatar-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #0d6efd;
+        color: #fff;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid #fff;
+        transition: 0.2s;
+    }
+
+        .avatar-overlay:hover {
+            background: #0b5ed7;
+            transform: scale(1.1);
+        }
+
+    .profile-meta {
+        font-size: 14px;
+    }
+
+    .profile-meta span {
+       color: #6c757d;
+    }
+
+    /* INFO CARD */
+    .info-card {
+        padding: 10px;
+    }
+
+    .info-header {
+        font-size: 18px;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* FORM */
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow: none;
+            border-color: #0d6efd;
+        }
+
+    /* BUTTON */
+    .btn-success {
+        border-radius: 10px;
+        font-weight: 500;
+    }
+
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        <!-- LEFT PROFILE CARD -->
+        <div class="col-md-3">
+            <div class="card profile-card text-center">
+                <div class="profile-avatar-wrapper position-relative">
+
+                    <img src="images/avatar/1.png"
+                         class="profile-avatar"
+                         id="profileImage">
+
+                    <!-- Camera Overlay -->
+                    <div class="avatar-overlay" id="uploadTrigger">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
+
+                    <!-- Hidden input -->
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+
+                </div>
+                <h5 class="mt-3 mb-0 fw-semibold" name="name1" id="name1" style="font-weight: bold;"></h5>
+                <small class="text-muted" name="adid" id="adid"></small>
+
+                <hr>
+
+                <div class="profile-meta">
+                    <div class="d-flex justify-content-between">
+                        <span>Section</span>
+                        <strong name="section1" id="section1">BPS</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Account Type</span>
+                        <strong class="text-uppercase text-primary" name="userlevel" id="userlevel"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT INFO CARD -->
+        <div class="col-md-9">
+            <div class="card info-card">
+                <div class="card-body">
+
+                    <div class="info-header">
+                        Account Information
+                    </div>
+
+                    <form class="mt-4">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Full Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="fullname" id="fullname" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Email</label>
+                            <div class="col-sm-9">
+                                <input type="email" class="form-control" value="jeffrey.reyes@brother-biph.com.ph" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">
+                                Section <span class="text-danger">*</span>
+                            </label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="section" id="section" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Account Type</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" value="ADMIN" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <label class="col-sm-3 col-form-label">Registered Date</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="date_added" id="date_added" disabled>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            @* <button class="btn btn-success px-4"> *@
+                            @*     <i class="bi bi-save me-1"></i> Update Information *@
+                            @* </button> *@
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="~/js/pages_js/user_profile.js" asp-append-version="true"></script>

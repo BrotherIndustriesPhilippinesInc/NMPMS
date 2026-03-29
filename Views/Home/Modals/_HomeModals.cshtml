@@ -162,11 +162,11 @@
                                            id="problem_name" name="problem_name">
 
                                     <label class="form-label">Phenomenon Details *</label>
-                                    @* <textarea class="form-control mb-3" id="phenomenon_details" name="phenomenon_details"></textarea> *@
-                                    <label class="form-label">Phenomenon Details *</label>
+                                    <textarea class="form-control mb-3" id="phenomenon_details" name="phenomenon_details"></textarea>
+                                    @* <label class="form-label">Phenomenon Details *</label> *@
 
-                                    <div id="phenomenon_editor" class="form-control mb-2" style="min-height:200px;"></div>
-                                    <input type="hidden" id="phenomenon_details" name="phenomenon_details" />
+                                    @* <div id="phenomenon_editor" class="form-control mb-2" style="min-height:200px;"></div> *@
+                                    @* <input type="hidden" id="phenomenon_details" name="phenomenon_details" /> *@
 
                                     <label class="form-label">Attachment</label>
                                     <input type="file" class="form-control form-control-sm"
@@ -314,41 +314,41 @@
   // });
 </script>
 <script>
-    let phenomenonEditor;
+    // let phenomenonEditor;
 
-    document.addEventListener("DOMContentLoaded", function () {
+    // document.addEventListener("DOMContentLoaded", function () {
 
-        phenomenonEditor = new EditorJS({
-            holder: 'phenomenon_editor',
-            placeholder: 'Describe the problem phenomenon in detail...',
-            autofocus: true,
-            tools: {
-                header: {
-                    class: Header,
-                    inlineToolbar: true
-                },
-                paragraph: {
-                    class: Paragraph,
-                    inlineToolbar: true
-                },
-                // list: {
-                //     class: List,
-                //     inlineToolbar: true
-                // },
-                table: Table,
-                quote: {
-                    class: Quote,
-                    inlineToolbar: true
-                },
-                delimiter: Delimiter,
-                linkTool: {
-                    class: LinkTool,
-                    config: {
-                        endpoint: '/Home/FetchUrl' // optional, remove if not using
-                    }
-                }
-            }
-        });
+    //     phenomenonEditor = new EditorJS({
+    //         holder: 'phenomenon_editor',
+    //         placeholder: 'Describe the problem phenomenon in detail...',
+    //         autofocus: true,
+    //         tools: {
+    //             header: {
+    //                 class: Header,
+    //                 inlineToolbar: true
+    //             },
+    //             paragraph: {
+    //                 class: Paragraph,
+    //                 inlineToolbar: true
+    //             },
+    //             list: {
+    //                 class: List,
+    //                 inlineToolbar: true
+    //             },
+    //             table: Table,
+    //             quote: {
+    //                 class: Quote,
+    //                 inlineToolbar: true
+    //             },
+    //             delimiter: Delimiter,
+    //             linkTool: {
+    //                 class: LinkTool,
+    //                 config: {
+    //                     endpoint: '/Home/FetchUrl' optional, remove if not using
+    //                 }
+    //             }
+    //         }
+    //     });
 
-    });
+    // });
 </script>

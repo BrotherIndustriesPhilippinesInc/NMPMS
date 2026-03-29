@@ -13,15 +13,15 @@ public class LoginController : Controller
 
     public IActionResult Index()
     {
-        //string? ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        //string? ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
 
-        string ip = "10.248.15.190";
+        //string ip = "10.248.15.190";
+        string? ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        //if (string.IsNullOrEmpty(ip))
-        //{
-        //    ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        //}
+        if (ip == "127.0.0.1" || ip == "::1")
+        {
+            ip = "10.248.15.190";
+        }
+
 
         using (var conn = _db.GetSqlServerConnection()) 
         {
@@ -31,7 +31,7 @@ public class LoginController : Controller
                            FROM Tbl_LOGIN_Request 
                            WHERE HOSTNAME = @ip 
                            AND STATUS = 'ACTIVE' 
-                           AND [SYSTEM ID] = 78
+                           AND [SYSTEM ID] = 84
                            ORDER BY ID DESC";
 
             using (var cmd = new SqlCommand(sql, conn))

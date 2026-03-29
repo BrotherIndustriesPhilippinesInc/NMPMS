@@ -54,23 +54,22 @@ function users_dataTable(data) {
     });
 }
 
-$(document).ready(function () {
-    $('#biph_id').on('keypress', function (e) {
-        if (e.which == 13) {
-            let empno = $(this).val();
+$('#biph_id').on('keydown', function (e) {
+    if (!e) return; // safety check
+    if (e.key === "Enter") { // more reliable than e.which
+        let empno = $(this).val();
 
-            $.post('Accounts/get_details', { empNo: empno })
-                .done(res => {
-                    if (res.valid === 1) {
-                        $('#fullname').val(res.fullName);
-                        $('#adid').val(res.adid);
-                        $('#email').val(res.email);
-                        $('#position').val(res.position);
-                        $('#section').val(res.section);
-             }
-          });
-        }
-    });
+        $.post('Accounts/get_details', { empNo: empno })
+            .done(res => {
+                if (res.valid === 1) {
+                    $('#fullname').val(res.fullName);
+                    $('#adid').val(res.adid);
+                    $('#email').val(res.email);
+                    $('#position').val(res.position);
+                    $('#section').val(res.section);
+                }
+            });
+    }
 });
 
 $(document).on("click", "#save_user", function (e) {
@@ -78,6 +77,13 @@ $(document).on("click", "#save_user", function (e) {
 
     const form = document.getElementById('form_submit');
     const formData = new FormData(form);
+
+    //formData.append('fullname', $('#fullname').val());
+    //formData.append('adid', $('#adid').val());
+    //formData.append('section', $('#section').val());
+    //formData.append('biph_id', $('#biph_id').val());
+    //formData.append('position', $('#position').val());
+    //formData.append('email', $('#email').val());
 
     fetch('Accounts/save_user', {
         method: "POST",
@@ -91,6 +97,16 @@ $(document).on("click", "#save_user", function (e) {
                     text: "User saved successfully!",
                     icon: "success"
                 });
+
+                //save_to_iportal(fullname, email, section, position, adid, biph_id);
+                save_to_iportal(
+                    $('#fullname').val(),
+                    $('#email').val(),
+                    $('#section').val(),
+                    $('#position').val(),
+                    $('#adid').val(),
+                    $('#biph_id').val()
+                );
             } else {
                 Swal.fire({
                     title: "Error",
@@ -108,3 +124,39 @@ $(document).on("click", "#save_user", function (e) {
             });
         });
 });
+
+
+function save_to_iportal(Name, email, Section, Position, ADID, Empno) {
+    var approver_number = 0;
+    var system_id = 84;
+
+     if(Position === "Supervisor" || Position === "Junior Supervisor" || Position === "Senior Supervisor" || Position === "Senior Staff" || Position === "Senior Engineer"){
+       approver_number = 1;
+     }else if(Position ==="Manager" || Position === "Senior Manager"){
+       approver_number = 2
+     }else{
+       approver_number = 0
+     }
+
+    $.ajax({
+        "url": 'http://apbiphbpsts01:8080/CASAPI/api/register',
+        "type": 'POST',
+        "data": {
+            system_id: system_id,
+            system_name: "New Model Problem Management System",
+            approver_number: approver_number,
+            full_name: Name,
+            email: email,
+            section: Section,
+            position: Position,
+            adid: ADID,
+            employee_number: Empno
+        },
+        "success": function (response) {
+            console.log(response);
+        },
+        "error": function (xhr, status, error) {
+            console.error('AJAX error:', status, error);
+        }
+    });
+}

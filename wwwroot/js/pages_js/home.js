@@ -158,6 +158,19 @@ $(document).on("click", ".stat-card", function () {
     }
 });
 
+
+const FILE_FOLDERS = {
+    1: 'AttachmentFile',
+    2: 'AnalysisFiles',
+    3: 'ImmediateActionFiles',
+    4: 'PermanentActionFiles'
+};
+
+const PHOTO_FOLDERS = {
+    problem: 'PhotoUpload',
+    analysis: 'AnalysisPhotos',
+    action: 'ActionPhotos'
+};
 function openPmlModal(item) {
   // $('#control_no').val(item.control_no);
   const control_no = item.control_no;
@@ -219,28 +232,71 @@ function openPmlModal(item) {
   $('#pmlModal').modal('show');
 }
 
-function viewAttachment(filename, steps) {
-    var folderName = "";
-    if (steps == 1) {
-         folderName = 'AttachmentFile';
+//function viewAttachment(filename, steps) {
+//    var folderName = "";
+//    if (steps == 1) {
+//         folderName = 'AttachmentFile';
 
-    } else if (steps == 2) {
-         folderName = 'AnalysisFiles';
+//    } else if (steps == 2) {
+//         folderName = 'AnalysisFiles';
+//    }
+//    Swal.fire({
+//        title: 'View Attachment',
+//        html: `
+//            <iframe
+//                src="upload/${folderName}/${filename}"
+//                style="width:100%; height:70vh; border:none;"
+//                loading="lazy">
+//            </iframe>
+//        `,
+//        width: '90%',
+//        padding: '0',
+//        showCloseButton: true,
+//        showConfirmButton: false,
+//        allowOutsideClick: true
+//    });
+//}
+
+//function viewAttachment(filename, step) {
+
+//    const folderName = FILE_FOLDERS[step] || 'AttachmentFile';
+
+//    Swal.fire({
+//        title: 'View Attachment',
+//        html: `
+//            <iframe
+//                src="upload/${folderName}/${filename}"
+//                style="width:100%; height:75vh; border:none; border-radius:8px;"
+//                loading="lazy">
+//            </iframe>
+//        `,
+//        width: '95%',
+//        showCloseButton: true,
+//        showConfirmButton: false,
+//        background: '#fff'
+//    });
+//}
+
+function viewAttachment(filename, step) {
+
+    const folderName = FILE_FOLDERS[step] || 'AttachmentFile';
+    const fileUrl = `upload/${folderName}/${filename}`;
+    const ext = filename.split('.').pop().toLowerCase();
+
+    let content = '';
+
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+        content = `<img src="${fileUrl}" style="max-width:100%; max-height:80vh;">`;
+    } else {
+        content = `<iframe src="${fileUrl}" style="width:100%; height:75vh; border:none;"></iframe>`;
     }
+
     Swal.fire({
-        title: 'View Attachment',
-        html: `
-            <iframe 
-                src="upload/${folderName}/${filename}"
-                style="width:100%; height:70vh; border:none;"
-                loading="lazy">
-            </iframe>
-        `,
-        width: '90%',
-        padding: '0',
+        title: filename,
+        html: content,
+        width: '95%',
         showCloseButton: true,
-        showConfirmButton: false,
-        allowOutsideClick: true
+        showConfirmButton: false
     });
 }
 function pmsModal() {
@@ -271,126 +327,6 @@ function pmsModal() {
 
   $('#pmsModal').modal('show');
 }
-
-function loadAnalysis(controlNo) {
-
-    fetch(`/Analysis/GetAnalysis?control_no=${controlNo}`)
-        .then(res => res.json())
-        .then(data => {
-
-            if (data.status === "success") {
-                const steps = '2'
-
-                const d = data.data;
-
-                document.getElementById("analysis_cause").value = d.analysis_cause || "";
-                document.getElementById("defect_details").value = d.defect_details || "";
-                document.getElementById("problem_category").value = d.problem_category || "";
-                document.getElementById("analysis_by").value = d.analysis_by || "";
-                document.getElementById("finish_date").value = d.finish_date ? d.finish_date.split("T")[0] : "";
-                document.getElementById("problem_rank").value = d.problem_rank || "";
-
-                // attachment preview
-                if (d.attachment != null) {
-                    //document.getElementById("attachmentPreviewContainer").innerHTML =
-                    //    `<a href="/${d.attachment}" target="_blank">View Attachment</a>`;
-
-                    //viewAttachment(filename, steps)
-                    const fileName = d.attachment.split(/[/\\]/).pop();
-                    console.log(fileName);
-
-                    $('#attachmentPreviewContainer1').html(`
-                        <div class="mt-1 text-muted small">
-                            ${fileName}
-                        </div>
-                        <button class="btn btn-sm btn-primary mt-2" 
-                                onclick="viewAttachment('${fileName}','${steps}')">
-                            View Attachment
-                        </button>
-                    `);
-                } else {
-                    $('#attachmentPreviewContainer').html('<small class="text-muted">No Attachment</small>');
-                }
-
-                // image preview
-                //if (d.image_cause) {
-                //    document.getElementById("photoPreviewContainer").innerHTML =
-                //        `<img src="/${d.image_cause}" style="max-width:150px;">`;
-                //}
-                if (d.image_cause != null) {
-                    const image_fileName = d.image_cause.split(/[/\\]/).pop();
-                    console.log(image_fileName);
-                    $('#photoPreviewContainer1').html(`
-                        <img src="upload/AnalysisImages/${image_fileName}" 
-                             class="img-fluid rounded shadow-sm mb-2"
-                             style="max-height:200px;">
-                        <div>
-                            <small class="text-muted">Click image to enlarge</small>
-                        </div>
-                    `);
-                } else {
-                    $('#photoPreviewContainer1').html('<small class="text-muted">No Photo Uploaded</small>');
-                }
-
-            }
-
-        });
-
-}
-
-function loadImmediateAction(controlNo) {
-
-        fetch(`/Analysis/GetImmediateAction?control_no=${controlNo}`)
-            .then(res => res.json())
-            .then(data => {
-
-                if (data.status === "success") {
-
-                    const d = data.data;
-
-                    document.getElementById("assembly").value = d.assembly || "";
-                    document.getElementById("parts").value = d.parts || "";
-                    document.getElementById("machine").value = d.machine || "";
-                    document.getElementById("system").value = d.system || "";
-
-                    document.getElementById("fg_treatment").value = d.fg_treatment || "";
-                    document.getElementById("process_change").value = d.process_change || "";
-                    document.getElementById("wi_change").value = d.wi_change || "";
-                    document.getElementById("re_education").value = d.re_education || "";
-                    document.getElementById("change_manpower").value = d.change_manpower || "";
-                    document.getElementById("other_action").value = d.other || "";
-
-                    document.getElementById("action_by").value = d.action_by || "";
-                    document.getElementById("action_date").value = d.action_date ? d.action_date.split("T")[0] : "";
-
-                    // Attachment preview
-                    if (d.attachment != null) {
-
-                        const fileName = d.attachment.split(/[/\\]/).pop();
-
-                        $('#attachmentPreviewContainerIA').html(`
-                            <div class="mt-1 text-muted small">
-                                ${fileName}
-                            </div>
-                            <button class="btn btn-sm btn-primary mt-2"
-                                    onclick="viewAttachment('${fileName}','3')">
-                                View Attachment
-                            </button>
-                        `);
-
-                    } else {
-
-                        $('#attachmentPreviewContainerIA').html(
-                            '<small class="text-muted">No Attachment</small>'
-                        );
-
-                    }
-
-                }
-
-            });
-
-    }
 
 
 const photoDrop = document.getElementById('photoDrop');
@@ -471,93 +407,122 @@ function previewPhoto(file) {
 }
 
 
-//function savePMS() {
-//    const form = document.getElementById('pmsForm');
-//    const formData = new FormData(form);
-
-//    fetch('/Home/CreateIssue', {
-//        method: 'POST',
-//        body: formData
-//    })
-//    .then(res => res.json())
-//    .then(data => {
-//        if (data.status === 'success') {
-//            swal.fire({
-//                icon: 'success',
-//                title: 'Created Successfully',
-//                text: 'Control No.: '+ data.control_no
-
-//            })
-//            bootstrap.Modal.getInstance(document.getElementById('pmsModal')).hide();
-//            form.reset();
-//        } else {
-//            alert(data.message);
-//        }
-//    })
-//    .catch(err => {
-//        console.error(err);
-//        alert('Saving failed');
-//    });
-//}
-
 function savePMS() {
+    const form = document.getElementById('pmsForm');
+    const formData = new FormData(form);
 
-    phenomenonEditor.save().then((outputData) => {
+    fetch('/Home/CreateIssue', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            swal.fire({
+                icon: 'success',
+                title: 'Created Successfully',
+                text: 'Control No.: '+ data.control_no
 
-        // Convert JSON to string and store in hidden input
-        document.getElementById('phenomenon_details').value =
-            JSON.stringify(outputData);
-
-        const form = document.getElementById('pmsForm');
-        const formData = new FormData(form);
-
-        fetch('/Home/CreateIssue', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Created Successfully',
-                        text: 'Control No.: ' + data.control_no
-                    });
-
-                    // Close modal
-                    bootstrap.Modal.getInstance(
-                        document.getElementById('pmsModal')
-                    ).hide();
-
-                    // Reset form
-                    form.reset();
-                    phenomenonEditor.clear();
-
-                    // ✅ RELOAD TABLE DATA (same as activateBtn)
-                    const model = document.getElementById('modelInput').value;
-                    const stage = document.getElementById('stageInput').value;
-
-                    if (model && stage) {
-                        fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log("Reloaded Data:", data);
-                                pml_listTable(data);
-                            })
-                            .catch(error => console.error('Error reloading table:', error));
-                    }
-
-                } else {
-                    alert(data.message);
-                }
             })
+            bootstrap.Modal.getInstance(document.getElementById('pmsModal')).hide();
+            form.reset();
 
-    }).catch((error) => {
-        console.error('Editor save failed:', error);
-        alert('Please complete the Phenomenon Details.');
+            const model = document.getElementById('modelInput').value;
+            const stage = document.getElementById('stageInput').value;
+
+            if (model && stage) {
+                 fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
+                 .then(response => response.json())
+                 .then(data => {
+                        console.log("Reloaded Data:", data);
+                        pml_listTable(data);
+                 })
+                 .catch(error => console.error('Error reloading table:', error));
+            }
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Saving failed');
     });
 }
+function viewPhoto(filename, type = 'problem') {
+
+    const folder = PHOTO_FOLDERS[type] || 'PhotoUpload';
+
+    Swal.fire({
+        title: 'View Photo',
+        html: `
+            <img 
+                src="upload/${folder}/${filename}" 
+                style="max-width:100%; max-height:80vh; border-radius:10px;"
+            >
+        `,
+        width: 'auto',
+        showCloseButton: true,
+        showConfirmButton: false
+    });
+}
+//function savePMS() {
+
+//    phenomenonEditor.save().then((outputData) => {
+
+//        // Convert JSON to string and store in hidden input
+//        document.getElementById('phenomenon_details').value =
+//            JSON.stringify(outputData);
+
+//        const form = document.getElementById('pmsForm');
+//        const formData = new FormData(form);
+
+//        fetch('/Home/CreateIssue', {
+//            method: 'POST',
+//            body: formData
+//        })
+//            .then(res => res.json())
+//            .then(data => {
+//                if (data.status === 'success') {
+
+//                    Swal.fire({
+//                        icon: 'success',
+//                        title: 'Created Successfully',
+//                        text: 'Control No.: ' + data.control_no
+//                    });
+
+//                    // Close modal
+//                    bootstrap.Modal.getInstance(
+//                        document.getElementById('pmsModal')
+//                    ).hide();
+
+//                    // Reset form
+//                    form.reset();
+//                    phenomenonEditor.clear();
+
+//                    // ✅ RELOAD TABLE DATA (same as activateBtn)
+//                    const model = document.getElementById('modelInput').value;
+//                    const stage = document.getElementById('stageInput').value;
+
+//                    if (model && stage) {
+//                        fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
+//                            .then(response => response.json())
+//                            .then(data => {
+//                                console.log("Reloaded Data:", data);
+//                                pml_listTable(data);
+//                            })
+//                            .catch(error => console.error('Error reloading table:', error));
+//                    }
+
+//                } else {
+//                    alert(data.message);
+//                }
+//            })
+
+//    }).catch((error) => {
+//        console.error('Editor save failed:', error);
+//        alert('Please complete the Phenomenon Details.');
+//    });
+//}
 
 function populatenew(mName, sName) {
     const $modelSelect = $('.model-select');

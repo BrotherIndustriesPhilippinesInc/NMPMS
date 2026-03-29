@@ -122,7 +122,7 @@ namespace NMPMS.Controllers
                             analysis_cause = EXCLUDED.analysis_cause,
                             defect_analysis_details = EXCLUDED.defect_analysis_details,
                             problem_category = EXCLUDED.problem_category,
-                            finish_analysisdate = COALESCE(NULLIF(EXCLUDED.finish_analysisdate,''), tbl_analysis.finish_analysisdate),
+                            finish_analysisdate = EXCLUDED.finish_analysisdate,
                             attachment = COALESCE(NULLIF(EXCLUDED.attachment,''), tbl_analysis.attachment),
                             image_cause = COALESCE(NULLIF(EXCLUDED.image_cause,''), tbl_analysis.image_cause),
                             analysis_by = EXCLUDED.analysis_by,

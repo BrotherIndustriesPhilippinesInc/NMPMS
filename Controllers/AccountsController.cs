@@ -95,6 +95,7 @@ namespace NMPMS.Controllers
 
 
                 using (var con = _db.GetConnection())
+                //using (var sqlCon = _db.GetSqlServerConnection())
                 {
                     await con.OpenAsync();
 
@@ -116,6 +117,25 @@ namespace NMPMS.Controllers
 
                         await cmd.ExecuteNonQueryAsync();
                     }
+
+                    //string query = @"INSERT INTO [dbo].[Tbl_System_Approver_list] ([SYSTEM ID],[SYSTEM NAME],[APPROVER NUMBER],[FULL NAME],[EMAIL ADDRESS],[SECTION],[POSITION],[ADID],[EMPLOYEE NUMBER]) VALUES(@system_id, @system_name, @approver_no, @fullname, @email, @section, @position, @adid, @empno)";
+
+                    //using (var cmd2 = new SqlCommand(query, sqlCon))
+                    //{
+                    //    await sqlCon.OpenAsync();
+
+                    //    cmd2.Parameters.AddWithValue("@system_id", 84);
+                    //    cmd2.Parameters.AddWithValue("@system_name", "New Model Problem Management System");
+                    //    cmd2.Parameters.AddWithValue("@approver_no", (object)biph_id ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@fullname", (object)fullname ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@email", (object)email ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@section", (object)section ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@position", (object)position ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@adid", (object)adid ?? DBNull.Value);
+                    //    cmd2.Parameters.AddWithValue("@empno", (object)biph_id ?? DBNull.Value);
+
+                    //    await cmd2.ExecuteNonQueryAsync();
+                    //}
                 }
 
                 return Json(new { status = "success"});
@@ -160,6 +180,8 @@ namespace NMPMS.Controllers
                         }
                     }
                 }
+
+               
             }
             return Ok(list);
         }

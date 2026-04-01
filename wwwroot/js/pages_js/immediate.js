@@ -13,6 +13,9 @@ function loadImmediateAction(controlNo) {
                 document.getElementById("parts").value = d.parts || "";
                 document.getElementById("machine").value = d.machine || "";
                 document.getElementById("system").value = d.system || "";
+                document.getElementById("trial_reason").value = d.trial_reason || "";
+                document.getElementById("enough_stocks_qty").value = d.enough_stocks_qty || "";
+                document.getElementById("sorting_result").value = d.sorting_result || "";
 
                 document.getElementById("fg_treatment").value = d.fg_treatment || "";
                 document.getElementById("process_change").value = d.process_change || "";
@@ -22,11 +25,10 @@ function loadImmediateAction(controlNo) {
                 document.getElementById("other_action").value = d.other || "";
 
                 document.getElementById("action_by").value = d.action_by || "";
-                document.getElementById("action_date").value = d.action_date ? d.action_date.split("T")[0] : "";
+                document.getElementById("action_date").value = d.action_date || "";
+                //document.getElementById("action_date").value = d.action_date ? d.action_date.split("T")[0] : "";
 
-                // Attachment preview
                 if (d.attachment != null) {
-
                     const fileName = d.attachment.split(/[/\\]/).pop();
 
                     $('#attachmentPreviewContainerIA').html(`
@@ -40,15 +42,11 @@ function loadImmediateAction(controlNo) {
                         `);
 
                 } else {
-
                     $('#attachmentPreviewContainerIA').html(
                         '<small class="text-muted">No Attachment</small>'
                     );
-
                 }
-
             }
-
         });
 
 }

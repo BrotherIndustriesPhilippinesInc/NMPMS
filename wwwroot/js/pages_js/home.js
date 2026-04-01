@@ -228,6 +228,10 @@ function openPmlModal(item) {
 
     loadAnalysis(control_no);
     loadImmediateAction(control_no);
+    loadtemp(control_no);
+    loadper(control_no);
+    loadhorizontal(control_no);
+    loadb_action(control_no);
 
   $('#pmlModal').modal('show');
 }

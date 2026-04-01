@@ -14,7 +14,8 @@ function loadAnalysis(controlNo) {
                 document.getElementById("defect_details").value = d.defect_details || "";
                 document.getElementById("problem_category").value = d.problem_category || "";
                 document.getElementById("analysis_by").value = d.analysis_by || "";
-                document.getElementById("finish_date").value = d.finish_date ? d.finish_date.split("T")[0] : "";
+                //document.getElementById("finish_date").value = d.finish_date ? d.finish_date.split("T")[0] : "";
+                document.getElementById("finish_date").value = d.finish_date || "";
                 document.getElementById("problem_rank").value = d.problem_rank || "";
 
                 // attachment preview

@@ -1,10 +1,35 @@
 ﻿<link href="~/css/home.css" rel="stylesheet" />
+
+<style>
+    .view-mode input,
+    .view-mode textarea,
+    .view-mode select {
+        border: none !important;
+        background: transparent !important;
+        pointer-events: none;
+        box-shadow: none !important;
+        padding-left: 0;
+    }
+
+        .view-mode input[type="file"] {
+            display: none;
+        }
+
+    .view-mode .photo-preview-placeholder {
+        display: none;
+    }
+
+    .view-mode textarea {
+        resize: none;
+    }
+</style>
 <div class="modal fade" id="pmlModal" tabindex="-1">
     <div class="modal-dialog modal-xxl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
 
             <div class="modal-header">
                 <h5 class="fw-bold">Problem Management Log</h5>
+                 
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -393,9 +418,130 @@
 
                     </div>
                 </div>
-                <div id="s5" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-shield-check"></i></div><div class="section-title">Permanent Action</div></div><div class="card-glass"><textarea class="form-control"></textarea></div></div>
-                <div id="s6" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-diagram-3"></i></div><div class="section-title">Horizontal Expansion</div></div><div class="card-glass grid-2"><input class="form-control"><input type="date" class="form-control"></div></div>
-                <div id="s7" class="section"><div class="section-header"><div class="section-icon"><i class="bi bi-check2-circle"></i></div><div class="section-title">B-Action</div></div><div class="card-glass grid-2"><input class="form-control"><input class="form-control"></div></div>
+
+                <div id="s5" class="section">
+                    <div class="section-header">
+                    <div class="section-icon"><i class="bi bi-shield-check"></i></div>
+                    <div class="section-title">Permanent Action</div>
+                </div>
+
+                    <div class="card-glass grid-2">
+
+                        <div class="form-group">
+                            <label>Assembly</label>
+                            <textarea id="s5_assembly" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parts</label>
+                            <textarea id="s5_parts" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Machine</label>
+                            <textarea id="s5_machine" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>System</label>
+                            <textarea id="s5_system" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Implementation Date</label>
+                            <input id="s5_implematation_Date" type="date" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Person In Charge</label>
+                            <input id="s5_pic" type="text" class="form-control">
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div id="s6" class="section"><div class="section-header">
+                    <div class="section-icon"><i class="bi bi-diagram-3"></i></div>
+                    <div class="section-title">Horizontal Expansion</div></div>
+
+                    <div class="card-glass grid-2">
+
+                        <div class="form-group">
+                            <label>Assembly</label>
+                            <textarea id="s6_assembly" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parts</label>
+                            <textarea id="s6_parts" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Machine</label>
+                            <textarea id="s6_machine" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>System</label>
+                            <textarea id="s6_system" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Can Horizontal to Other Model</label>
+                            <select class="form-control" id="ishorizontal">
+                                <option value="yes">YES</option>
+                                <option value="no">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Model</label>
+                            <input id="s6_model" type="text" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Implementation Date</label>
+                            <input id="s6_implematation_Date" type="date" class="form-control">
+                        </div>
+                    </div>
+                 </div>
+
+
+                <div id="s7" class="section">
+                    <div class="section-header">
+                    <div class="section-icon"><i class="bi bi-check2-circle"></i>
+                        </div>
+                    <div class="section-title">B-Action</div></div>
+                    <div class="card-glass grid-2">
+                        <div class="form-group">
+                            <label>B-Action Judgment</label>
+                            <select class="form-control" id="s7_action_judgement">
+                                <option value="Necessary">Necessary</option>
+                                <option value="Unnecessary">Unnecessary</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>B-Action No:</label>
+                            <input id="s7_action_no" class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Rank</label>
+                            <select class="form-control" id="s7_rank">
+                                <option value="Fatal">Fatal</option>
+                                <option value="Heavy">Heavy</option>
+                                <option value="Fine">Fine</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>System</label>
+                            <input id="s7_pic" class="form-control" />
+                        </div>
+                    </div>
+                    
+                </div>
 
             </div>
 
@@ -403,6 +549,8 @@
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-warning" id="editBtn">Edit</button>
+                <button class="btn btn-danger" id="cancelEditBtn">Cancel</button>
                 <button class="btn btn-primary" id="saveBtn">Save</button>
             </div>
 
@@ -588,6 +736,35 @@
             formData.append("s4_detail_action_by", document.getElementById("s4_detail_action_by").value);
             formData.append("implematation_Date", document.getElementById("implematation_Date").value);
         }
+        
+        else if(currentStep == 5){
+            formData.append("s5_assembly", document.getElementById("s5_assembly").value);
+            formData.append("s5_parts", document.getElementById("s5_parts").value);
+            formData.append("s5_machine", document.getElementById("s5_machine").value);
+            formData.append("s5_system", document.getElementById("s5_system").value);
+            formData.append("s5_pic", document.getElementById("s5_pic").value);
+            formData.append("s5_implematation_Date", document.getElementById("s5_implematation_Date").value);
+        }
+        
+        else if(currentStep == 6){
+            formData.append("s6_assembly", document.getElementById("s6_assembly").value);
+            formData.append("s6_parts", document.getElementById("s6_parts").value);
+            formData.append("s6_machine", document.getElementById("s6_machine").value);
+            formData.append("s6_system", document.getElementById("s6_system").value);
+            formData.append("ishorizontal", document.getElementById("ishorizontal").value);
+            formData.append("s6_model", document.getElementById("s6_model").value);
+            formData.append("s6_implematation_Date", document.getElementById("s6_implematation_Date").value);
+        }
+
+        else if(currentStep == 7){
+            formData.append("s7_action_judgement", document.getElementById("s7_action_judgement").value);
+            formData.append("s7_action_no", document.getElementById("s7_action_no").value);
+            formData.append("s7_rank", document.getElementById("s7_rank").value);
+            formData.append("s7_pic", document.getElementById("s7_pic").value);
+        }
+
+
+        
 
         fetch("/PMS/SaveStep", {
             method:"POST",
@@ -595,16 +772,12 @@
         })
         .then(res=>res.json())
         .then(data=>{
-            // alert(data.message);
-            // swal.fire({
-            //     icon: "success",
-            //     title: data.message
-            // })
 
             if(data.message == "Invalid step"){
                 swal.fire({
-                    icon: "error",
-                    title: data.message
+                    icon: "info",
+                    title: data.message,
+                    text: "Make sure to select a steps!"
                 })
             }else{
                  swal.fire({
@@ -615,4 +788,50 @@
         });
 
     });
+
+const modal = document.getElementById('pmlModal');
+const editBtn = document.getElementById('editBtn');
+const cancelBtn = document.getElementById('cancelEditBtn');
+
+function setViewMode() {
+    modal.classList.add('view-mode');
+
+    modal.querySelectorAll('input, textarea, select').forEach(el => {
+        el.setAttribute('readonly', true);
+        el.setAttribute('disabled', true);
+    });
+
+    editBtn.classList.remove('d-none');
+    cancelBtn.classList.add('d-none');
+}
+
+function setEditMode() {
+    modal.classList.remove('view-mode');
+
+    modal.querySelectorAll('input, textarea, select').forEach(el => {
+        el.removeAttribute('readonly');
+        el.removeAttribute('disabled');
+    });
+
+    editBtn.classList.add('d-none');
+    cancelBtn.classList.remove('d-none');
+}
+
+modal.addEventListener('shown.bs.modal', () => {
+    setViewMode();
+});
+
+editBtn.addEventListener('click', () => {
+    setEditMode();
+});
+
+cancelBtn.addEventListener('click', () => {
+    setViewMode();
+});
+
+document.getElementById("saveBtn").addEventListener("click", function () {
+    setTimeout(() => {
+        setViewMode();
+    }, 500);
+});
 </script>

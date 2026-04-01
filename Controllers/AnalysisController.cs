@@ -21,9 +21,6 @@ namespace NMPMS.Controllers
         {
             return View();
         }
-
-     
-
         [HttpGet]
         public async Task<IActionResult> GetAnalysis(string control_no)
         {
@@ -38,7 +35,7 @@ namespace NMPMS.Controllers
                             defect_analysis_details,
                             attachment,
                             problem_category,
-                            finish_analysisdate,
+                            TO_CHAR(finish_analysisdate, 'YYYY-MM-DD') AS finish_analysisdate,
                             image_cause,
                             analysis_by,
                             problem_rank
@@ -90,21 +87,8 @@ namespace NMPMS.Controllers
                 {
                     await con.OpenAsync();
 
-                    string sql = @"SELECT 
-                            control_no,
-                            assembly,
-                            parts,
-                            machine,
-                            system,
-                            ia_attachement,
-                            fg_treatment,
-                            process_change,
-                            wi_change,
-                            re_education,
-                            change_manpower,
-                            other,
-                            action_date,
-                            added_by
+                    string sql = @"SELECT TO_CHAR(action_date, 'YYYY-MM-DD') as action_date,
+                          *
                         FROM public.tbl_immediate_action
                         WHERE control_no = @control_no";
 
@@ -133,6 +117,9 @@ namespace NMPMS.Controllers
                                         change_manpower = reader["change_manpower"]?.ToString(),
                                         other = reader["other"]?.ToString(),
                                         action_date = reader["action_date"]?.ToString(),
+                                        trial_reason = reader["reason"]?.ToString(),
+                                        sorting_result = reader["sort_result"]?.ToString(),
+                                        enough_stocks_qty = reader["stock_qty"]?.ToString(),
                                         action_by = reader["added_by"]?.ToString()
                                     }
                                 });
@@ -148,5 +135,192 @@ namespace NMPMS.Controllers
                 return Json(new { status = "error", message = ex.Message });
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetTempAction(string control_no)
+        {
+            try
+            {
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"SELECT TO_CHAR(implementation_date,'YYYY-MM-DD') as implementation_date, * FROM public.tbl_temporaryaction
+                        WHERE control_no = @control_no";
+
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return Json(new
+                                {
+                                    status = "success",
+                                    data = new
+                                    {
+                                        s4_assembly = reader["assembly"]?.ToString(),
+                                        s4_parts = reader["parts"]?.ToString(),
+                                        s4_machine = reader["machine"]?.ToString(),
+                                        s4_system = reader["system"]?.ToString(),
+                                        s4_actionby = reader["action_by"]?.ToString(),
+                                        s4_impdate = reader["implementation_date"]?.ToString(),
+                                        s4_pic = reader["pic"]?.ToString(),
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { status = "empty" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPerAction(string control_no)
+        {
+            try
+            {
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"SELECT TO_CHAR(implementation_date,'YYYY-MM-DD') as implementation_date, * FROM public.tbl_permanentaction
+                        WHERE control_no = @control_no";
+
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return Json(new
+                                {
+                                    status = "success",
+                                    data = new
+                                    {
+                                        s5_assembly = reader["assembly"]?.ToString(),
+                                        s5_parts = reader["parts"]?.ToString(),
+                                        s5_machine = reader["machine"]?.ToString(),
+                                        s5_system = reader["system"]?.ToString(),
+                                        s5_impdate = reader["implementation_date"]?.ToString(),
+                                        s5_pic = reader["pic"]?.ToString(),
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { status = "empty" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetHorizontal(string control_no)
+        {
+            try
+            {
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"SELECT TO_CHAR(implementation_date,'YYYY-MM-DD') as implementation_date, * FROM public.tbl_horizontal
+                        WHERE control_no = @control_no";
+
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return Json(new
+                                {
+                                    status = "success",
+                                    data = new
+                                    {
+                                        s6_assembly = reader["assembly"]?.ToString(),
+                                        s6_parts = reader["parts"]?.ToString(),
+                                        s6_machine = reader["machine"]?.ToString(),
+                                        s6_system = reader["system"]?.ToString(),
+                                        s6_impdate = reader["implementation_date"]?.ToString(),
+                                        s6_model = reader["model"]?.ToString(),
+                                        s6_ishorizontal = reader["ishorizontal"]?.ToString()
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { status = "empty" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBAction(string control_no)
+        {
+            try
+            {
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"SELECT * FROM public.tbl_baction
+                        WHERE control_no = @control_no";
+
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return Json(new
+                                {
+                                    status = "success",
+                                    data = new
+                                    {
+                                        s7_actionjudgement = reader["action_judgement"]?.ToString(),
+                                        s7_actionno = reader["action_no"]?.ToString(),
+                                        s7_rank = reader["rank"]?.ToString(),
+                                        s7_pic = reader["pic"]?.ToString(),
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { status = "empty" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
+        }
+
     }
 }

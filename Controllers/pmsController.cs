@@ -32,6 +32,12 @@ namespace NMPMS.Controllers
                     return await SaveImmediate_Action(controlNo, form);
                 case 4:
                     return await SaveTemp_Action(controlNo, form);
+                case 5:
+                    return await SavePer_Action(controlNo, form);
+                case 6:
+                    return await SaveHorizontal(controlNo, form);
+                case 7:
+                    return await SaveB_Action(controlNo, form);
             }
 
             return Json(new { status = "error", message = "Invalid step" });
@@ -160,6 +166,9 @@ namespace NMPMS.Controllers
             string re_education = form["re_education"];
             string change_manpower = form["change_manpower"];
             string other = form["other_action"];
+            string enough_stocks_qty = form["enough_stocks_qty"];
+            string trial_reason = form["trial_reason"];
+            string sorting_result = form["sorting_result"];
 
             string action_by = form["action_by"];
 
@@ -207,7 +216,10 @@ namespace NMPMS.Controllers
                         other,
                         action_date,
                         date_added,
-                        added_by
+                        added_by,
+                        stock_qty,
+                        reason,
+                        sort_result,
                     )
                     VALUES(
                         @control_no,
@@ -224,7 +236,10 @@ namespace NMPMS.Controllers
                         @other,
                         @action_date,
                         NOW(),
-                        @added_by
+                        @added_by,
+                        @enough_stocks_qty,
+                        @trial_reason,
+                        @sorting_result,
                     );";
 
                 using (var cmd = new NpgsqlCommand(sql, con))
@@ -243,6 +258,9 @@ namespace NMPMS.Controllers
                     cmd.Parameters.AddWithValue("@other", other ?? "");
                     cmd.Parameters.AddWithValue("@action_date", action_date ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@added_by", action_by ?? "");
+                    cmd.Parameters.AddWithValue("@enough_stocks_qty", enough_stocks_qty ?? "");
+                    cmd.Parameters.AddWithValue("@trial_reason", trial_reason ?? "");
+                    cmd.Parameters.AddWithValue("@sorting_result", sorting_result ?? "");
 
                     await cmd.ExecuteNonQueryAsync();
                 }
@@ -331,6 +349,178 @@ namespace NMPMS.Controllers
 
             return Json(new { status = "success", message = "Temporary Action saved" });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SavePer_Action(string controlNo, IFormCollection form)
+        {
+            string assembly = form["s5_assembly"];
+            string parts = form["s5_parts"];
+            string machine = form["s5_machine"];
+            string system = form["s5_system"];
+
+            string pic = form["s5_pic"];
+
+            DateTime? action_date = null;
+            if (!string.IsNullOrWhiteSpace(form["s5_implematation_Date"]))
+                action_date = DateTime.Parse(form["s5_implematation_Date"]);
+
+
+            using (var con = _db.GetConnection())
+            {
+                await con.OpenAsync();
+
+                string sql = @"INSERT INTO public.tbl_permanentaction(
+                                control_no, 
+                                assembly, 
+                                parts, 
+                                machine, 
+                                system, 
+                                implementation_date, 
+                                pic, 
+                                date_added)
+                                VALUES(
+                                @control_no,
+                                @assembly,
+                                @parts,
+                                @machine,
+                                @system,
+                                @action_date,
+                                @added_by,
+                                NOW()
+                                
+                                );";
+
+                using (var cmd = new NpgsqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@control_no", controlNo);
+                    cmd.Parameters.AddWithValue("@assembly", assembly ?? "");
+                    cmd.Parameters.AddWithValue("@parts", parts ?? "");
+                    cmd.Parameters.AddWithValue("@machine", machine ?? "");
+                    cmd.Parameters.AddWithValue("@system", system ?? "");
+                    cmd.Parameters.AddWithValue("@action_date", action_date ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@added_by", pic ?? "");
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            return Json(new { status = "success", message = "Permanent Action saved" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveHorizontal(string controlNo, IFormCollection form)
+        {
+            string assembly = form["s6_assembly"];
+            string parts = form["s6_parts"];
+            string machine = form["s6_machine"];
+            string system = form["s6_system"];
+            string ishorizontal = form["ishorizontal"];
+            string model = form["s6_model"];
+
+            //string pic = form["s5_pic"];
+
+            DateTime? action_date = null;
+            if (!string.IsNullOrWhiteSpace(form["s6_implematation_Date"]))
+                action_date = DateTime.Parse(form["s6_implematation_Date"]);
+
+
+            using (var con = _db.GetConnection())
+            {
+                await con.OpenAsync();
+
+                string sql = @"INSERT INTO public.tbl_horizontal(
+                                control_no, 
+                                assembly, 
+                                parts, 
+                                machine, 
+                                system, 
+                                model, 
+                                ishorizontal, 
+                                implementation_date, 
+                                date_added)
+                                VALUES(
+                                @control_no,
+                                @assembly,
+                                @parts,
+                                @machine,
+                                @system,
+                                @model,
+                                @ishorizontal,
+                                @action_date,
+                                NOW()
+                                
+                                );";
+
+                using (var cmd = new NpgsqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@control_no", controlNo);
+                    cmd.Parameters.AddWithValue("@assembly", assembly ?? "");
+                    cmd.Parameters.AddWithValue("@parts", parts ?? "");
+                    cmd.Parameters.AddWithValue("@machine", machine ?? "");
+                    cmd.Parameters.AddWithValue("@system", system ?? "");
+                    cmd.Parameters.AddWithValue("@model", model ?? "");
+                    cmd.Parameters.AddWithValue("@ishorizontal", ishorizontal ?? "");
+                    cmd.Parameters.AddWithValue("@action_date", action_date ?? (object)DBNull.Value);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            return Json(new { status = "success", message = "Horizontal Expansion Action saved" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveB_Action(string controlNo, IFormCollection form)
+        {
+            string s7_action_judgement = form["s7_action_judgement"];
+            string s7_action_no = form["s7_action_no"];
+            string s7_rank = form["s7_rank"];
+            string s7_pic = form["s7_pic"];
+            //string ishorizontal = form["ishorizontal"];
+            //string model = form["s6_model"];
+
+            //string pic = form["s5_pic"];
+
+            //DateTime? action_date = null;
+            //if (!string.IsNullOrWhiteSpace(form["s6_implematation_Date"]))
+            //    action_date = DateTime.Parse(form["s6_implematation_Date"]);
+
+
+            using (var con = _db.GetConnection())
+            {
+                await con.OpenAsync();
+
+                string sql = @"INSERT INTO public.tbl_baction(
+                                control_no, 
+                                action_judgement, 
+                                action_no, 
+                                rank, 
+                                pic, 
+                                date_added)
+                                VALUES(
+                                @control_no,
+                                @action_judgement,
+                                @action_no,
+                                @rank,
+                                @pic,
+                                NOW()
+                                
+                                );";
+
+                using (var cmd = new NpgsqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@control_no", controlNo);
+                    cmd.Parameters.AddWithValue("@action_judgement", s7_action_judgement ?? "");
+                    cmd.Parameters.AddWithValue("@action_no", s7_action_no ?? "");
+                    cmd.Parameters.AddWithValue("@rank", s7_rank ?? "");
+                    cmd.Parameters.AddWithValue("@pic", s7_pic ?? "");
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            return Json(new { status = "success", message = "B Action saved" });
+        }
+
+
+
 
     }
 }

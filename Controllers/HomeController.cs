@@ -166,37 +166,57 @@ public class HomeController : Controller
             string areaDetection = form["area_detection"];
             string process = form["process"];
             string issuedBy = form["issued_by"];
-            //string issuedDate = form["issued_date"];
             string partCode = form["part_code"];
             string partName = form["part_name"];
             string supplier = form["supplier"];
             string controlNo = form["control_no"];
-            DateTime? issuedDate = null;
+            string stepno = form["stepno"];
 
+            DateTime? issuedDate = null;
             if (!string.IsNullOrWhiteSpace(form["issued_date"]))
             {
                 issuedDate = DateTime.Parse(form["issued_date"]);
             }
+
             string personInCharge = "Jeffrey Reyes";
-            string problemPhotoPath = null;
-            if (form.Files["problem_photos[]"] != null && form.Files["problem_photos[]"].Length > 0)
+
+            var uploadedFiles = form.Files.Where(f => f.Name == "problem_photos[]").ToList();
+            List<string> filePaths = new List<string>();
+
+            if (uploadedFiles.Count > 0)
             {
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload/PhotoUpload");
-                var file = form.Files["problem_photos[]"];
-                string uniqueFileName = controlNo + Path.GetExtension(file.FileName);
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                int index = 1;
+
+                foreach (var file in uploadedFiles)
                 {
-                    await file.CopyToAsync(stream);
+                    string extension = Path.GetExtension(file.FileName).ToLower();
+
+                    string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".avi" };
+
+                    if (!allowedExtensions.Contains(extension))
+                        continue;
+
+                    string uniqueFileName = $"{controlNo}_{index}{extension}";
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    filePaths.Add(Path.Combine("upload/PhotoUpload/", uniqueFileName));
+                    index++;
                 }
-
-                problemPhotoPath = Path.Combine("upload/PhotoUpload", uniqueFileName);
             }
-
             string attachmentPath = null;
             string attachmentName = null;
             var attachmentFile = form.Files["attachment"];
+
             if (attachmentFile != null && attachmentFile.Length > 0)
             {
                 var attachmentFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "AttachmentFile");
@@ -214,42 +234,41 @@ public class HomeController : Controller
                     await attachmentFile.CopyToAsync(stream);
                 }
 
-                attachmentPath = Path.Combine("upload/AttachmentFile", uniqueFileName);
+                attachmentPath = Path.Combine("upload/AttachmentFile/", uniqueFileName);
             }
 
             using (var con = _db.GetConnection())
             {
                 await con.OpenAsync();
-
                 string sql = @"INSERT INTO pms_records (
-                    pms_create,
-                    person_incharge,
-                    problem_name,
-                    phenomenon_details,
-                    stage,
-                    model,
-                    serial_number,
-                    area_detection,
-                    process,
-                    issued_by,
-                    issued_date,
-                    part_code,
-                    part_name,
-                    supplier,
-                    problem_photo,     
-                    attachment,          
-                    attachment_name,
-                    control_no
-                ) VALUES (
-                    @pms_create, @person_incharge, @problem_name, @phenomenon_details,
-                    @stage, @model, @serial_number, @area_detection, @process,
-                    @issued_by, @issued_date, @part_code, @part_name, @supplier,
-                    @problem_photo, @attachment, @attachment_name, @control_no
-                )";
+                pms_create,
+                person_incharge,
+                problem_name,
+                phenomenon_details,
+                stage,
+                model,
+                serial_number,
+                area_detection,
+                process,
+                issued_by,
+                issued_date,
+                part_code,
+                part_name,
+                supplier,
+                problem_photo,
+                attachment,
+                attachment_name,
+                control_no
+            ) VALUES (
+                @pms_create, @person_incharge, @problem_name, @phenomenon_details,
+                @stage, @model, @serial_number, @area_detection, @process,
+                @issued_by, @issued_date, @part_code, @part_name, @supplier,
+                @problem_photo, @attachment, @attachment_name, @control_no
+            )";
 
                 using (var cmd = new NpgsqlCommand(sql, con))
                 {
-                    cmd.Parameters.AddWithValue("pms_create", pmsCreate);
+                    cmd.Parameters.AddWithValue("pms_create", pmsCreate ?? "");
                     cmd.Parameters.AddWithValue("person_incharge", personInCharge ?? "");
                     cmd.Parameters.AddWithValue("problem_name", problemName ?? "");
                     cmd.Parameters.AddWithValue("phenomenon_details", phenomenonDetails ?? "");
@@ -259,17 +278,32 @@ public class HomeController : Controller
                     cmd.Parameters.AddWithValue("area_detection", areaDetection ?? "");
                     cmd.Parameters.AddWithValue("process", process ?? "");
                     cmd.Parameters.AddWithValue("issued_by", issuedBy ?? "");
-                    //cmd.Parameters.AddWithValue("issued_date", issuedDate ?? "");
                     cmd.Parameters.AddWithValue("issued_date", issuedDate.HasValue ? issuedDate.Value : DBNull.Value);
                     cmd.Parameters.AddWithValue("part_code", partCode ?? "");
                     cmd.Parameters.AddWithValue("part_name", partName ?? "");
                     cmd.Parameters.AddWithValue("supplier", supplier ?? "");
-                    cmd.Parameters.AddWithValue("problem_photo", (object)problemPhotoPath ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("problem_photo", DBNull.Value);
+
                     cmd.Parameters.AddWithValue("attachment", (object)attachmentPath ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("attachment_name", attachmentName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("control_no", controlNo ?? "");
 
                     await cmd.ExecuteNonQueryAsync();
+                }
+
+                foreach (var path in filePaths)
+                {
+                    string fileSql = @"INSERT INTO pms_problem_files (control_no, file_path,steps)
+                                   VALUES (@control_no, @file_path,@steps)";
+
+                    using (var fileCmd = new NpgsqlCommand(fileSql, con))
+                    {
+                        fileCmd.Parameters.AddWithValue("control_no", controlNo);
+                        fileCmd.Parameters.AddWithValue("file_path", path);
+                        fileCmd.Parameters.AddWithValue("steps",int.TryParse(stepno, out int stepsValue) ? stepsValue : (object)DBNull.Value);
+                        await fileCmd.ExecuteNonQueryAsync();
+                    }
                 }
             }
 
@@ -279,6 +313,40 @@ public class HomeController : Controller
         {
             return Json(new { status = "error", message = ex.Message });
         }
+    }
+
+
+    public IActionResult fetch_graph(string stage, string model)
+    {
+        var list = new List<object>();
+
+        using (var con = _db.GetConnection())
+        {
+            con.Open();
+
+            string query = @"SELECT b.stage, b.model, a.problem_category FROM public.tbl_analysis a join public.pms_records b on a.control_no = b.control_no
+                        WHERE b.stage = @stage AND b.model = @model";
+
+            using (var cmd = new NpgsqlCommand(query, con))
+            {
+                cmd.Parameters.AddWithValue("@stage", stage ?? "");
+                cmd.Parameters.AddWithValue("@model", model ?? "");
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new
+                        {
+                            problem_category = reader["problem_category"]?.ToString(),
+                           
+                        });
+                    }
+                }
+            }
+        }
+
+        return Ok(list);
     }
 
 

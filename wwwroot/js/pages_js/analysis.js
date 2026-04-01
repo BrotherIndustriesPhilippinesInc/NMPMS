@@ -45,17 +45,30 @@ function loadAnalysis(controlNo) {
                 //    document.getElementById("photoPreviewContainer").innerHTML =
                 //        `<img src="/${d.image_cause}" style="max-width:150px;">`;
                 //}
-                if (d.image_cause != null) {
-                    const image_fileName = d.image_cause.split(/[/\\]/).pop();
-                    console.log(image_fileName);
-                    $('#photoPreviewContainer1').html(`
-                        <img src="upload/AnalysisImages/${image_fileName}" 
-                             class="img-fluid rounded shadow-sm mb-2"
-                             style="max-height:200px;">
-                        <div>
-                            <small class="text-muted">Click image to enlarge</small>
-                        </div>
-                    `);
+                if (d.image_cause) {
+
+                    const cleanPath = d.image_cause.replace(/\\/g, "/");
+
+                    const ext = cleanPath.split('.').pop().toLowerCase();
+
+                    let html = '';
+
+                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                        html = `
+                            <img src="${cleanPath}" 
+                                 style="height:120px; border-radius:8px; cursor:pointer;"
+                                 onclick="viewFile('${cleanPath}')">
+                        `;
+                                    } else {
+                                        html = `
+                            <video src="${cleanPath}" 
+                                   style="height:120px;" controls>
+                            </video>
+                        `;
+                    }
+
+                    $('#photoPreviewContainer1').html(html);
+
                 } else {
                     $('#photoPreviewContainer1').html('<small class="text-muted">No Photo Uploaded</small>');
                 }

@@ -41,12 +41,20 @@ $('#activateBtn').on('click', function () {
 
     $('#createIssueBtn').removeClass('d-none');
 
+    fetch(`/Home/fetch_graph?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Filtered Data:", data);
+            renderProblemCategoryChart(data);
+           
+        })
+        .catch(error => console.error('Error fetching data:', error));
     fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
         .then(response => response.json())
         .then(data => {
             console.log("Filtered Data:", data);
             pml_listTable(data);
-           
+
         })
         .catch(error => console.error('Error fetching data:', error));
 });
@@ -146,6 +154,72 @@ function pml_listTable(data) {
     }
 }
 
+let chartInstance = null;
+
+function renderProblemCategoryChart(data) {
+
+    const counts = {};
+
+    data.forEach(item => {
+        const category = item.problem_category || "Unknown";
+        counts[category] = (counts[category] || 0) + 1;
+    });
+
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+
+    const ctx = document.getElementById('problemCategoryChart').getContext('2d');
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Problem Category Count',
+                data: values,
+                backgroundColor: [
+                    '#4e73df',
+                    '#1cc88a',
+                    '#36b9cc',
+                    '#f6c23e',
+                    '#e74a3b',
+                    '#858796'
+                ],
+                borderColor: '#333',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // ✅ THIS IS KEY
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff' // optional: white text for dark background
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#fff'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#fff'
+                    }
+                }
+            }
+        }
+    });
+}
+
 $(document).on("click", ".stat-card", function () {
     let status = $(this).data("status");
     let table = $('#tbl_pml').DataTable();
@@ -183,49 +257,8 @@ function openPmlModal(item) {
   $('#pms_part_name').text(item.part_name);
   $('#pms_supplier_name').text(item.supplier);
 
-  $('#pms_name').val(item.problem_name);
-  $('#pms_details').val(item.phenomenon_details);
 
-  $('#pms_stage').val(item.stage);
-  $('#pms_model').val(item.model);
-  $('#pms_serial').val(item.serial_number);
-  $('#pms_area').val(item.area_detection);
-  $('#pms_process').val(item.process);
-  $('#pms_issued_by').val(item.issued_by);
-  // $('#control_no').text(control_no);
-  $('#pms_control_no').text(control_no);
-  $('#control_no_input').val(control_no);
-
-    if (item.problem_photo) {
-        $('#photoPreviewContainer').html(`
-        <img src="upload/PhotoUpload/${item.problem_photo}" 
-             class="img-fluid rounded shadow-sm mb-2"
-             style="max-height:200px;">
-        <div>
-            <small class="text-muted">Click image to enlarge</small>
-        </div>
-    `);
-    } else {
-        $('#photoPreviewContainer').html('<small class="text-muted">No Photo Uploaded</small>');
-    }
-
-    if (item.attachment_name) {
-
-        // Show filename preview inside modal
-        $('#attachmentPreviewContainer').html(`
-        <div class="mt-1 text-muted small">
-            ${item.attachment_name}
-        </div>
-        <button class="btn btn-sm btn-primary mt-2" 
-                onclick="viewAttachment('${item.attachment_name}','1')">
-            View Attachment
-        </button>
-    `);
-
-    } else {
-        $('#attachmentPreviewContainer').html('<small class="text-muted">No Attachment</small>');
-    }
-
+    loadpheno(control_no);
     loadAnalysis(control_no);
     loadImmediateAction(control_no);
     loadtemp(control_no);
@@ -332,65 +365,168 @@ function pmsModal() {
   $('#pmsModal').modal('show');
 }
 
-
+// ================= PHOTO UPLOAD (ALIGNED + FIXED) =================
 const photoDrop = document.getElementById('photoDrop');
 const photoInput = document.getElementById('problem_photos');
 
-photoDrop.addEventListener('click', () => photoInput.click());
+let selectedFiles = [];
 
-photoDrop.addEventListener('dragover', e => {
-  e.preventDefault();
-  photoDrop.classList.add('border-primary');
-});
+// Render preview grid
+function renderPreview() {
+    photoDrop.innerHTML = '';
 
-photoDrop.addEventListener('dragleave', () => {
-  photoDrop.classList.remove('border-primary');
-});
+    if (selectedFiles.length === 0) {
+        photoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload</div>';
+        return;
+    }
 
-photoDrop.addEventListener('drop', e => {
-  e.preventDefault();
-  photoDrop.classList.remove('border-primary');
-  photoInput.files = e.dataTransfer.files;
-  previewPhotos(photoInput.files);
-});
+    const grid = document.createElement('div');
+    grid.className = 'photo-preview-grid';
 
-photoInput.addEventListener('change', () => {
-  previewPhotos(photoInput.files);
-});
+    selectedFiles.forEach((file, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
 
-function previewPhotos(files) {
-  photoDrop.innerHTML = '';
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.className = 'remove-btn';
 
-  if (!files.length) {
-    photoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload</div>';
-    return;
-  }
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        };
 
-  const grid = document.createElement('div');
-  grid.className = 'photo-preview-grid';
+        const reader = new FileReader();
 
-  Array.from(files).forEach(file => {
-    if (!file.type.startsWith('image/')) return;
+        reader.onload = (e) => {
+            let element;
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      grid.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  });
+            if (file.type.startsWith('image/')) {
+                element = document.createElement('img');
+                element.src = e.target.result;
+            }
+            else if (file.type.startsWith('video/')) {
+                element = document.createElement('video');
+                element.src = e.target.result;
+                element.controls = true;
+            }
+            else {
+                return;
+            }
 
-  photoDrop.appendChild(grid);
+            previewItem.appendChild(element);
+            previewItem.appendChild(removeBtn);
+        };
+
+        reader.readAsDataURL(file);
+        grid.appendChild(previewItem);
+    });
+
+    photoDrop.appendChild(grid);
 }
 
-document.getElementById('pmsModal').addEventListener('hidden.bs.modal', () => {
-  photoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload</div>';
-  photoInput.value = '';
+// Click upload
+photoDrop.addEventListener('click', () => photoInput.click());
+
+// Input select
+photoInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
 });
 
+// Drag over
+photoDrop.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    photoDrop.classList.add('dragover');
+});
 
+// Drag leave
+photoDrop.addEventListener('dragleave', () => {
+    photoDrop.classList.remove('dragover');
+});
 
+// Drop
+photoDrop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    photoDrop.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+});
+
+// Handle files
+function handleFiles(files) {
+    for (let file of files) {
+
+        // prevent duplicate
+        if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            continue;
+        }
+
+        selectedFiles.push(file);
+    }
+
+    renderPreview();
+}
+
+// Reset when modal closes
+document.getElementById('pmsModal').addEventListener('hidden.bs.modal', () => {
+    selectedFiles = [];
+    renderPreview();
+    photoInput.value = '';
+});
+
+renderPreview();
+
+function savePMS() {
+    const form = document.getElementById('pmsForm');
+    const formData = new FormData(form);
+    const steps = document.getElementById('stepno').value;
+
+    // 🔥 append files manually
+    selectedFiles.forEach(file => {
+        formData.append('problem_photos[]', file);
+    });
+    formData.append('stepno', steps)
+
+    fetch('/Home/CreateIssue', {
+        method: 'POST',
+        body: formData
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Created Successfully',
+                    text: 'Control No.: ' + data.control_no
+                });
+
+                bootstrap.Modal.getInstance(document.getElementById('pmsModal')).hide();
+
+                form.reset();
+
+                // reset preview
+                selectedFiles = [];
+                renderPreview();
+
+                const model = document.getElementById('modelInput').value;
+                const stage = document.getElementById('stageInput').value;
+
+                if (model && stage) {
+                    fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
+                        .then(res => res.json())
+                        .then(data => pml_listTable(data));
+                }
+
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Saving failed');
+        });
+}
 function previewPhoto(file) {
   const dropArea = document.getElementById('photoDrop');
 
@@ -408,49 +544,6 @@ function previewPhoto(file) {
   img.classList.add('rounded', 'shadow-sm');
 
   dropArea.appendChild(img);
-}
-
-
-function savePMS() {
-    const form = document.getElementById('pmsForm');
-    const formData = new FormData(form);
-
-    fetch('/Home/CreateIssue', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            swal.fire({
-                icon: 'success',
-                title: 'Created Successfully',
-                text: 'Control No.: '+ data.control_no
-
-            })
-            bootstrap.Modal.getInstance(document.getElementById('pmsModal')).hide();
-            form.reset();
-
-            const model = document.getElementById('modelInput').value;
-            const stage = document.getElementById('stageInput').value;
-
-            if (model && stage) {
-                 fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
-                 .then(response => response.json())
-                 .then(data => {
-                        console.log("Reloaded Data:", data);
-                        pml_listTable(data);
-                 })
-                 .catch(error => console.error('Error reloading table:', error));
-            }
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Saving failed');
-    });
 }
 function viewPhoto(filename, type = 'problem') {
 

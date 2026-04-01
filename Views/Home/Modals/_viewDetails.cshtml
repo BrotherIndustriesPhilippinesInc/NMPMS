@@ -178,9 +178,12 @@
 
                         <div class="form-group d-flex flex-column">
                             <label class="form-label">Image Cause</label>
-                            <div class="photo-preview-placeholder mb-2" id="photoDrop_analysis" style="border: 2px dashed #ccc; padding: 1rem; text-align: center; cursor: pointer;">
-                                Drag & Drop or Click to Upload
+                            <div class="photo-preview mb-2" id="photoDrop_analysis">
+                                <div class="photo-preview-placeholder">
+                                    Drag & Drop or Click to Upload
+                                </div>
                             </div>
+
                             <div id="photoPreviewContainer1" class="mb-2"></div>
                             <input type="file" id="cause_photo" name="cause_photo[]" multiple accept="image/*" hidden>
                         </div>
@@ -561,80 +564,111 @@
 
 <script>
 
+       // ================= ANALYSIS PHOTO UPLOAD =================
     const analysisPhotoDrop = document.getElementById('photoDrop_analysis');
     const analysisPhotoInput = document.getElementById('cause_photo');
 
+    let analysisFiles = [];
+
+    // Render preview
+    function renderAnalysisPreview() {
+        analysisPhotoDrop.innerHTML = '';
+
+        if (analysisFiles.length === 0) {
+            analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload</div>';
+            return;
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'photo-preview-grid';
+
+        analysisFiles.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.innerHTML = '×';
+            removeBtn.className = 'remove-btn';
+
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                analysisFiles.splice(index, 1);
+                renderAnalysisPreview();
+            };
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                let element;
+
+                if (file.type.startsWith('image/')) {
+                    element = document.createElement('img');
+                    element.src = e.target.result;
+                } else if (file.type.startsWith('video/')) {
+                    element = document.createElement('video');
+                    element.src = e.target.result;
+                    element.controls = true;
+                }
+
+                item.appendChild(element);
+                item.appendChild(removeBtn);
+            };
+
+            reader.readAsDataURL(file);
+            grid.appendChild(item);
+        });
+
+        analysisPhotoDrop.appendChild(grid);
+    }
+
+    // Click
     analysisPhotoDrop.addEventListener('click', () => analysisPhotoInput.click());
 
-    analysisPhotoDrop.addEventListener('dragover', e => {
-      e.preventDefault();
-      analysisPhotoDrop.classList.add('border-primary');
+    // Change
+    analysisPhotoInput.addEventListener('change', (e) => {
+        handleAnalysisFiles(e.target.files);
+    });
+
+    // Drag
+    analysisPhotoDrop.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        analysisPhotoDrop.classList.add('dragover');
     });
 
     analysisPhotoDrop.addEventListener('dragleave', () => {
-      analysisPhotoDrop.classList.remove('border-primary');
+        analysisPhotoDrop.classList.remove('dragover');
     });
 
-    analysisPhotoDrop.addEventListener('drop', e => {
-      e.preventDefault();
-      analysisPhotoDrop.classList.remove('border-primary');
-
-      analysisPhotoInput.files = e.dataTransfer.files;
-      previewAnalysisPhotos(analysisPhotoInput.files);
+    analysisPhotoDrop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        analysisPhotoDrop.classList.remove('dragover');
+        handleAnalysisFiles(e.dataTransfer.files);
     });
 
-    analysisPhotoInput.addEventListener('change', () => {
-      previewAnalysisPhotos(analysisPhotoInput.files);
-    });
+    // Handle files
+    function handleAnalysisFiles(files) {
+        for (let file of files) {
 
-    function previewAnalysisPhotos(files) {
-      analysisPhotoDrop.innerHTML = '';
+            // prevent duplicates
+            if (analysisFiles.some(f => f.name === file.name && f.size === file.size)) {
+                continue;
+            }
 
-      if (!files.length) {
-        analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload Analysis Photo</div>';
-        return;
-      }
+            analysisFiles.push(file);
+        }
 
-      const grid = document.createElement('div');
-      grid.className = 'photo-preview-grid';
-
-      Array.from(files).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          grid.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      });
-
-      analysisPhotoDrop.appendChild(grid);
+        renderAnalysisPreview();
     }
 
+    // Reset
     document.getElementById('pmlModal').addEventListener('hidden.bs.modal', () => {
-      analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload Analysis Photo</div>';
-      analysisPhotoInput.value = '';
+        analysisFiles = [];
+        renderAnalysisPreview();
+        analysisPhotoInput.value = '';
     });
-    function previewAnalysisPhoto(file) {
-      const dropArea = document.getElementById('photoDrop_analysis');
 
-      if (!file || !file.type.startsWith('image/')) {
-        alert('Please select a valid analysis image file');
-        return;
-      }
-
-      dropArea.innerHTML = '';
-
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(file);
-      img.style.height = '110px';
-      img.style.maxWidth = '100%';
-      img.classList.add('rounded', 'shadow-sm');
-
-      dropArea.appendChild(img);
-    }
+    // Init
+    renderAnalysisPreview();
 
 
 
@@ -682,8 +716,11 @@
             const attachment = document.getElementById("defect_attachment").files[0];
             if(attachment) formData.append("defect_attachment", attachment);
 
-            const photo = document.getElementById("cause_photo").files[0];
-            if(photo) formData.append("cause_photo", photo);
+            // const photo = document.getElementById("cause_photo").files[0];
+            // if(photo) formData.append("cause_photo", photo);
+           analysisFiles.forEach(file => {
+                formData.append("cause_photo[]", file);
+            });
         }
 
         else if(currentStep == 3){

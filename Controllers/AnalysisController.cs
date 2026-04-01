@@ -3,6 +3,7 @@ using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Npgsql;
 using Org.BouncyCastle.Asn1.Crmf;
 using System.Diagnostics;
+using System.Net.Mail;
 
 namespace NMPMS.Controllers
 {
@@ -20,6 +21,86 @@ namespace NMPMS.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPheno(string control_no)
+        {
+            try
+            {
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"SELECT * FROM public.pms_records WHERE control_no = @control_no";
+
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return Json(new
+                                {
+                                    status = "success",
+                                    data = new
+                                    {
+                                        pms_name = reader["problem_name"]?.ToString(),
+                                        pms_details = reader["phenomenon_details"]?.ToString(),
+                                        attachment = reader["attachment"]?.ToString(),
+                                        //problem_photos = reader["problem_photo"]?.ToString(),
+                                        pms_stage = reader["stage"]?.ToString(),
+                                        pms_model = reader["model"]?.ToString(),
+                                        pms_serial = reader["serial_number"]?.ToString(),
+                                        pms_area = reader["area_detection"]?.ToString(),
+                                        pms_process = reader["process"]?.ToString(),
+                                        pms_issued_by = reader["issued_by"]?.ToString(),
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { status = "empty" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProblemFiles(string control_no)
+        {
+            var list = new List<string>();
+
+            using (var con = _db.GetConnection())
+            {
+                await con.OpenAsync();
+
+                string sql = @"SELECT file_path 
+                       FROM pms_problem_files 
+                       WHERE control_no = @control_no";
+
+                using (var cmd = new NpgsqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@control_no", control_no);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            list.Add(reader["file_path"].ToString());
+                        }
+                    }
+                }
+            }
+
+            return Json(list);
         }
         [HttpGet]
         public async Task<IActionResult> GetAnalysis(string control_no)

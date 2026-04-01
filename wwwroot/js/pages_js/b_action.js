@@ -13,7 +13,6 @@ function loadb_action(controlNo) {
                 document.getElementById("s7_action_no").value = b.s7_actionno || "";
                 document.getElementById("s7_rank").value = b.s7_rank || "";
                 document.getElementById("s7_pic").value = b.s7_pic || "";
-
             }
 
         });

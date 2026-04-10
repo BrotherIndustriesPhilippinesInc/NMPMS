@@ -1,26 +1,106 @@
 ﻿<link href="~/css/home.css" rel="stylesheet" />
 
 <style>
+    /* ================= FULL REPORT STYLE ================= */
+    .view-mode .modal-content {
+        background: #fff;
+        font-family: Arial, sans-serif;
+    }
+
+    /* HEADER */
+    .view-mode .report-header h2 {
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .view-mode .report-header .subtitle {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    /* META GRID */
+    .view-mode .report-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px 30px;
+        font-size: 14px;
+    }
+
+    /* REMOVE ALL CARD STYLE */
+    .view-mode .card-glass {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* SECTION TITLE */
+    .view-mode .section-title {
+        font-size: 16px;
+        font-weight: bold;
+        border-bottom: 2px solid #000;
+        padding-bottom: 4px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+
+    /* FORM → REPORT ROW */
+    .view-mode .form-group {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        padding: 6px 0;
+        border-bottom: 1px dotted #bbb;
+    }
+
+    /* LABEL */
+    .view-mode label {
+        font-weight: bold;
+    }
+
+    /* VALUE */
     .view-mode input,
     .view-mode textarea,
     .view-mode select {
         border: none !important;
         background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
         pointer-events: none;
-        box-shadow: none !important;
-        padding-left: 0;
     }
 
-        .view-mode input[type="file"] {
-            display: none;
-        }
+    /* REMOVE INPUT LOOK */
+    .view-mode .form-control {
+        border: none !important;
+        background: transparent !important;
+    }
 
-    .view-mode .photo-preview-placeholder {
+    /* REMOVE PLACEHOLDER */
+    .view-mode ::placeholder {
+        color: transparent;
+    }
+
+    /* IMAGE STYLE */
+    .view-mode img {
+        max-width: 220px;
+        border: 1px solid #ccc;
+    }
+
+    /* ATTACHMENT STYLE */
+    .view-mode a {
+        color: #0d6efd;
+        text-decoration: underline;
+    }
+
+    /* HIDE EDIT ELEMENTS */
+    .view-mode input[type="file"],
+    .view-mode #photoDrop_analysis {
+        display: none !important;
+    }
+
+    /* STEP BUTTONS OFF */
+    .view-mode .step-nav {
         display: none;
-    }
-
-    .view-mode textarea {
-        resize: none;
     }
 </style>
 <div class="modal fade" id="pmlModal" tabindex="-1">
@@ -38,12 +118,19 @@
                     <div class="pms-details">
                         <div class="pms-title-line">
                             <strong><span id="pms_control_no"></span></strong>
-                            <input type="hidden" id="control_no_input" name="control_no">
+                            <input type="hidden" id="control_no_input" name="control_no_input">
                         </div>
 
                         <div class="pms-row">
                             <div class="pms-label">Progress:</div>
-                            <div class="pms-value" id="progress"></div>
+                            @* <div class="pms-value" id="progress"></div> *@
+                            <select class="form-select form-select-sm mb-2" id="progress" name="progress">
+                                <option value="">Select Process</option>
+                                <option value="Cause Investigation">Cause Investigation</option>
+                                <option value="Temporary Action">Temporary Action</option>
+                                <option value="Permanent Action">Permanent Action</option>
+                                <option value="Cancel">Cancel</option>
+                            </select>
                         </div>
 
                         <div class="pms-row">
@@ -225,11 +312,11 @@
                     </div>
                 </div>
                 <div id="s3" class="section">
-
                     <div class="section-header">
                         <div class="section-icon"><i class="bi bi-lightning"></i></div>
                         <div class="section-title">Immediate Action</div>
                     </div>
+                   
 
                     <!-- DETAILS -->
                     <div class="card-glass grid-2">
@@ -262,11 +349,12 @@
                         <div class="form-group">
                             <label>Attachment</label>
                             <div id="s3_attachmentPreviewContainer" class="mb-2"></div>
+                            <label for="defect_attachment" class="form-label">Attachment</label>
                             <input id="detail_attachment" type="file" class="form-control">
                         </div>
 
                     </div>
-
+                    <br >
                     <!-- ACTION DETAILS -->
                     <div class="card-glass grid-2">
 
@@ -278,6 +366,7 @@
                         <div class="form-group">
                             <label>Process Change</label>
                             <select id="process_change" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -286,6 +375,7 @@
                         <div class="form-group">
                             <label>WI Change</label>
                             <select id="wi_change" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -294,6 +384,7 @@
                         <div class="form-group">
                             <label>Re-education</label>
                             <select id="re_education" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -302,6 +393,7 @@
                         <div class="form-group">
                             <label>Change Manpower</label>
                             <select id="change_manpower" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -323,12 +415,14 @@
                         </div>
 
                     </div>
+                    <br >
 
                     <!-- PARTS RELATED -->
                     <div class="card-glass grid-2">
                         <div class="form-group">
                             <label>Parts Sorting</label>
                             <select id="parts_sorting" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -341,12 +435,13 @@
 
                         <div class="form-group">
                             <label>Enough Stocks Qty</label>
-                            <input id="enough_stocks_qty" class="form-control">
+                            <input id="enough_stocks_qty" type="number" class="form-control">
                         </div>
 
                         <div class="form-group">
                             <label>Proceed in Trial</label>
                             <select id="proceed_trial" class="form-control">
+                                <option selected></option>
                                 <option value="Yes">Yes</option>
                                 <option value="No">No</option>
                             </select>
@@ -406,6 +501,7 @@
 
                         <div class="form-group">
                             <label>Attachment</label>
+                            <div id="s4_attachmentPreviewContainer" class="mb-2"></div>
                             <input id="s4_detail_attachment" type="file" class="form-control">
                         </div>
 
@@ -463,7 +559,6 @@
                     </div>
                 </div>
 
-
                 <div id="s6" class="section"><div class="section-header">
                     <div class="section-icon"><i class="bi bi-diagram-3"></i></div>
                     <div class="section-title">Horizontal Expansion</div></div>
@@ -493,6 +588,7 @@
                         <div class="form-group">
                             <label>Can Horizontal to Other Model</label>
                             <select class="form-control" id="ishorizontal">
+                                <option selected></option>
                                 <option value="yes">YES</option>
                                 <option value="no">NO</option>
                             </select>
@@ -509,7 +605,6 @@
                     </div>
                  </div>
 
-
                 <div id="s7" class="section">
                     <div class="section-header">
                     <div class="section-icon"><i class="bi bi-check2-circle"></i>
@@ -519,6 +614,7 @@
                         <div class="form-group">
                             <label>B-Action Judgment</label>
                             <select class="form-control" id="s7_action_judgement">
+                                <option selected></option>
                                 <option value="Necessary">Necessary</option>
                                 <option value="Unnecessary">Unnecessary</option>
                             </select>
@@ -532,9 +628,10 @@
                         <div class="form-group">
                             <label>Rank</label>
                             <select class="form-control" id="s7_rank">
+                                <option selected></option>
                                 <option value="Fatal">Fatal</option>
                                 <option value="Heavy">Heavy</option>
-                                <option value="Fine">Fine</option>
+                                <option value="Light">Light</option>
                             </select>
                         </div>
 
@@ -545,9 +642,7 @@
                     </div>
                     
                 </div>
-
             </div>
-
             @* </form> *@
 
             <div class="modal-footer">
@@ -562,313 +657,4 @@
 </div>
 
 
-<script>
-
-       // ================= ANALYSIS PHOTO UPLOAD =================
-    const analysisPhotoDrop = document.getElementById('photoDrop_analysis');
-    const analysisPhotoInput = document.getElementById('cause_photo');
-
-    let analysisFiles = [];
-
-    // Render preview
-    function renderAnalysisPreview() {
-        analysisPhotoDrop.innerHTML = '';
-
-        if (analysisFiles.length === 0) {
-            analysisPhotoDrop.innerHTML = '<div class="photo-preview-placeholder">Drag & Drop or Click to Upload</div>';
-            return;
-        }
-
-        const grid = document.createElement('div');
-        grid.className = 'photo-preview-grid';
-
-        analysisFiles.forEach((file, index) => {
-            const item = document.createElement('div');
-            item.className = 'preview-item';
-
-            const removeBtn = document.createElement('button');
-            removeBtn.innerHTML = '×';
-            removeBtn.className = 'remove-btn';
-
-            removeBtn.onclick = (e) => {
-                e.stopPropagation();
-                analysisFiles.splice(index, 1);
-                renderAnalysisPreview();
-            };
-
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                let element;
-
-                if (file.type.startsWith('image/')) {
-                    element = document.createElement('img');
-                    element.src = e.target.result;
-                } else if (file.type.startsWith('video/')) {
-                    element = document.createElement('video');
-                    element.src = e.target.result;
-                    element.controls = true;
-                }
-
-                item.appendChild(element);
-                item.appendChild(removeBtn);
-            };
-
-            reader.readAsDataURL(file);
-            grid.appendChild(item);
-        });
-
-        analysisPhotoDrop.appendChild(grid);
-    }
-
-    // Click
-    analysisPhotoDrop.addEventListener('click', () => analysisPhotoInput.click());
-
-    // Change
-    analysisPhotoInput.addEventListener('change', (e) => {
-        handleAnalysisFiles(e.target.files);
-    });
-
-    // Drag
-    analysisPhotoDrop.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        analysisPhotoDrop.classList.add('dragover');
-    });
-
-    analysisPhotoDrop.addEventListener('dragleave', () => {
-        analysisPhotoDrop.classList.remove('dragover');
-    });
-
-    analysisPhotoDrop.addEventListener('drop', (e) => {
-        e.preventDefault();
-        analysisPhotoDrop.classList.remove('dragover');
-        handleAnalysisFiles(e.dataTransfer.files);
-    });
-
-    // Handle files
-    function handleAnalysisFiles(files) {
-        for (let file of files) {
-
-            // prevent duplicates
-            if (analysisFiles.some(f => f.name === file.name && f.size === file.size)) {
-                continue;
-            }
-
-            analysisFiles.push(file);
-        }
-
-        renderAnalysisPreview();
-    }
-
-    // Reset
-    document.getElementById('pmlModal').addEventListener('hidden.bs.modal', () => {
-        analysisFiles = [];
-        renderAnalysisPreview();
-        analysisPhotoInput.value = '';
-    });
-
-    // Init
-    renderAnalysisPreview();
-
-
-
-
-    const container = document.getElementById('scrollArea');
-    const sections = document.querySelectorAll('.section');
-    const buttons = document.querySelectorAll('.step-btn');
-    const bar = document.getElementById('progressBar');
-
-    let currentStep = 1;
-
-    function jump(id, btn){
-        document.getElementById(id).scrollIntoView({behavior:'smooth'});
-        buttons.forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        currentStep = parseInt(id.replace("s",""));
-    }
-
-    container.addEventListener('scroll',()=>{
-      let index=0;
-      sections.forEach((s,i)=>{
-        if(container.scrollTop >= s.offsetTop-200) index=i;
-      });
-      buttons.forEach(b=>b.classList.remove('active'));
-      buttons[index]?.classList.add('active');
-      bar.style.width = ((index+1)/sections.length*100)+'%';
-    });
-
-    document.getElementById("saveBtn").addEventListener("click", function(){
-
-        const formData = new FormData();
-
-        formData.append("step", currentStep);
-        formData.append("control_no", document.getElementById("control_no_input").value);
-
-        if(currentStep === 2){
-
-            formData.append("analysis_cause", document.getElementById("analysis_cause").value);
-            formData.append("defect_details", document.getElementById("defect_details").value);
-            formData.append("problem_category", document.getElementById("problem_category").value);
-            formData.append("analysis_by", document.getElementById("analysis_by").value);
-            formData.append("finish_date", document.getElementById("finish_date").value);
-            formData.append("problem_rank", document.getElementById("problem_rank").value);
-
-            const attachment = document.getElementById("defect_attachment").files[0];
-            if(attachment) formData.append("defect_attachment", attachment);
-
-            // const photo = document.getElementById("cause_photo").files[0];
-            // if(photo) formData.append("cause_photo", photo);
-           analysisFiles.forEach(file => {
-                formData.append("cause_photo[]", file);
-            });
-        }
-
-        else if(currentStep == 3){
-
-            formData.append("analysis_cause", document.getElementById("analysis_cause").value);
-            formData.append("defect_details", document.getElementById("defect_details").value);
-            formData.append("problem_category", document.getElementById("problem_category").value);
-            formData.append("analysis_by", document.getElementById("analysis_by").value);
-            formData.append("finish_date", document.getElementById("finish_date").value);
-            formData.append("problem_rank", document.getElementById("problem_rank").value);
-
-            const attachment = document.getElementById("defect_attachment").files[0];
-            if(attachment) formData.append("defect_attachment", attachment);
-
-
-            // Immediate Action
-            formData.append("assembly", document.getElementById("assembly").value);
-            formData.append("parts", document.getElementById("parts").value);
-            formData.append("machine", document.getElementById("machine").value);
-            formData.append("system", document.getElementById("system").value);
-            formData.append("detail_action_by", document.getElementById("detail_action_by").value);
-
-            const detailFile = document.getElementById("detail_attachment").files[0];
-            if(detailFile) formData.append("detail_attachment", detailFile);
-
-            formData.append("fg_treatment", document.getElementById("fg_treatment").value);
-            formData.append("process_change", document.getElementById("process_change").value);
-            formData.append("wi_change", document.getElementById("wi_change").value);
-            formData.append("re_education", document.getElementById("re_education").value);
-            formData.append("change_manpower", document.getElementById("change_manpower").value);
-            formData.append("other_action", document.getElementById("other_action").value);
-            formData.append("action_by", document.getElementById("action_by").value);
-            formData.append("action_date", document.getElementById("action_date").value);
-
-            formData.append("parts_sorting", document.getElementById("parts_sorting").value);
-            formData.append("sorting_result", document.getElementById("sorting_result").value);
-            formData.append("enough_stocks_qty", document.getElementById("enough_stocks_qty").value);
-            formData.append("proceed_trial", document.getElementById("proceed_trial").value);
-            formData.append("trial_reason", document.getElementById("trial_reason").value);
-            formData.append("parts_action_by", document.getElementById("parts_action_by").value);
-            formData.append("parts_action_date", document.getElementById("parts_action_date").value);
-
-        }
-
-        else if(currentStep == 4){
-            formData.append("s4_assembly", document.getElementById("s4_assembly").value);
-            formData.append("s4_parts", document.getElementById("s4_parts").value);
-            formData.append("s4_machine", document.getElementById("s4_machine").value);
-            formData.append("s4_system", document.getElementById("s4_system").value);
-            formData.append("s4_detail_action_by", document.getElementById("s4_detail_action_by").value);
-            formData.append("implematation_Date", document.getElementById("implematation_Date").value);
-        }
-        
-        else if(currentStep == 5){
-            formData.append("s5_assembly", document.getElementById("s5_assembly").value);
-            formData.append("s5_parts", document.getElementById("s5_parts").value);
-            formData.append("s5_machine", document.getElementById("s5_machine").value);
-            formData.append("s5_system", document.getElementById("s5_system").value);
-            formData.append("s5_pic", document.getElementById("s5_pic").value);
-            formData.append("s5_implematation_Date", document.getElementById("s5_implematation_Date").value);
-        }
-        
-        else if(currentStep == 6){
-            formData.append("s6_assembly", document.getElementById("s6_assembly").value);
-            formData.append("s6_parts", document.getElementById("s6_parts").value);
-            formData.append("s6_machine", document.getElementById("s6_machine").value);
-            formData.append("s6_system", document.getElementById("s6_system").value);
-            formData.append("ishorizontal", document.getElementById("ishorizontal").value);
-            formData.append("s6_model", document.getElementById("s6_model").value);
-            formData.append("s6_implematation_Date", document.getElementById("s6_implematation_Date").value);
-        }
-
-        else if(currentStep == 7){
-            formData.append("s7_action_judgement", document.getElementById("s7_action_judgement").value);
-            formData.append("s7_action_no", document.getElementById("s7_action_no").value);
-            formData.append("s7_rank", document.getElementById("s7_rank").value);
-            formData.append("s7_pic", document.getElementById("s7_pic").value);
-        }
-
-
-        
-
-        fetch("/PMS/SaveStep", {
-            method:"POST",
-            body:formData
-        })
-        .then(res=>res.json())
-        .then(data=>{
-
-            if(data.message == "Invalid step"){
-                swal.fire({
-                    icon: "info",
-                    title: data.message,
-                    text: "Make sure to select a steps!"
-                })
-            }else{
-                 swal.fire({
-                    icon: "success",
-                    title: data.message
-                })
-            }
-        });
-
-    });
-
-const modal = document.getElementById('pmlModal');
-const editBtn = document.getElementById('editBtn');
-const cancelBtn = document.getElementById('cancelEditBtn');
-
-function setViewMode() {
-    modal.classList.add('view-mode');
-
-    modal.querySelectorAll('input, textarea, select').forEach(el => {
-        el.setAttribute('readonly', true);
-        el.setAttribute('disabled', true);
-    });
-
-    editBtn.classList.remove('d-none');
-    cancelBtn.classList.add('d-none');
-}
-
-function setEditMode() {
-    modal.classList.remove('view-mode');
-
-    modal.querySelectorAll('input, textarea, select').forEach(el => {
-        el.removeAttribute('readonly');
-        el.removeAttribute('disabled');
-    });
-
-    editBtn.classList.add('d-none');
-    cancelBtn.classList.remove('d-none');
-}
-
-modal.addEventListener('shown.bs.modal', () => {
-    setViewMode();
-});
-
-editBtn.addEventListener('click', () => {
-    setEditMode();
-});
-
-cancelBtn.addEventListener('click', () => {
-    setViewMode();
-});
-
-document.getElementById("saveBtn").addEventListener("click", function () {
-    setTimeout(() => {
-        setViewMode();
-    }, 500);
-});
-</script>
+<script src="~/js/pages_js/details.js"></script>

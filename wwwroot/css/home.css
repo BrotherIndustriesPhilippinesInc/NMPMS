@@ -367,14 +367,14 @@ textarea.form-control {
 
 .pms-details {
     padding: 8px 14px;
-    font-size: 11px;
+    font-size: 16px;
     font-family: Arial, Helvetica, sans-serif;
     color: #000;
     line-height: 1.25;
 }
 
 .pms-title-line {
-    font-size: 12px;
+    font-size: 15px;
     margin-bottom: 4px;
 }
 
@@ -400,6 +400,19 @@ textarea.form-control {
 
 .pms-section-title {
     font-weight: 700;
-    font-size: 11px;
+    font-size: 16px;
     margin-bottom: 3px;
+}
+
+.auto-swal {
+    width: auto !important;
+    max-width: 90vw; /* prevent overflow */
+}
+
+.auto-swal img,
+.auto-swal video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: auto;
 }

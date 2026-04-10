@@ -13,8 +13,6 @@ public class LoginController : Controller
 
     public IActionResult Index()
     {
-
-        //string ip = "10.248.15.190";
         string? ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
         if (ip == "127.0.0.1" || ip == "::1")
@@ -77,6 +75,7 @@ public class LoginController : Controller
                         HttpContext.Session.SetString("ID", reader["id"].ToString());
                         HttpContext.Session.SetString("adid", reader["adid"].ToString());
                         HttpContext.Session.SetString("section", reader["section"].ToString());
+                        HttpContext.Session.SetString("userlevel", reader["user_level"].ToString());
 
                         return RedirectToAction("Index", "Home");
                     }

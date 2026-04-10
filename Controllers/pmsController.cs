@@ -26,6 +26,8 @@ namespace NMPMS.Controllers
 
             switch (step)
             {
+                case 1:
+                    return await SavePheno(controlNo, form);
                 case 2:
                     return await SaveAnalysis(controlNo, form);
                 case 3:
@@ -44,64 +46,119 @@ namespace NMPMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveAnalysis(string controlNo, IFormCollection form)
+        public async Task<IActionResult> SavePheno(string controlNo, IFormCollection form)
         {
-            string analysis_cause = form["analysis_cause"];
-            string defect_details = form["defect_details"];
-            string problem_category = form["problem_category"];
-            string analysis_by = form["analysis_by"];
-            string problem_rank = form["problem_rank"];
-            string defect_attachment = form["defect_attachment"];
-            string cause_photo = form["cause_photo"];
-
-            DateTime? finish_date = null;
-            if (!string.IsNullOrWhiteSpace(form["finish_date"]))
-                finish_date = DateTime.Parse(form["finish_date"]);
-
-            string analysis_imagePath = null;
-            if (form.Files["cause_photo"] != null && form.Files["cause_photo"].Length > 0)
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload/AnalysisImages");
-                var file = form.Files["cause_photo"];
-                string uniqueFileName = controlNo + Path.GetExtension(file.FileName);
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                analysis_imagePath = Path.Combine("upload/AnalysisImages", uniqueFileName);
-            }
-
-            string attachmentPath = null;
-            string attachmentName = null;
-            var attachmentFile = form.Files["defect_attachment"];
-            if (attachmentFile != null && attachmentFile.Length > 0)
-            {
-                var attachmentFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "AnalysisFiles");
-
-                if (!Directory.Exists(attachmentFolder))
-                    Directory.CreateDirectory(attachmentFolder);
-
-                attachmentName = attachmentFile.FileName;
-
-                string uniqueFileName = controlNo + Path.GetExtension(attachmentFile.FileName);
-                var filePath = Path.Combine(attachmentFolder, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await attachmentFile.CopyToAsync(stream);
-                }
-
-                attachmentPath = Path.Combine("upload/AnalysisFiles", uniqueFileName);
-            }
+            string progress = form["progress"];
+            string pms_name = form["pms_name"];
+            string replace_attachment = form["replace_attachment"];
+            string replace_photo = form["replace_photo"];
+            string pms_area = form["pms_area"];
+            string pms_process = form["pms_process"];
+            string pms_issued_by = form["pms_issued_by"];
+            //string pms_process = form["pms_process"];
 
             using (var con = _db.GetConnection())
             {
                 await con.OpenAsync();
+                string sql = @"UPDATE pms_records SET pms_create = @progress, problem_name = @pms_name WHERE control_no = @control_no";
+                using (var cmd = new NpgsqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@control_no", controlNo ?? "");
+                    cmd.Parameters.AddWithValue("@progress", progress ?? "");
+                    cmd.Parameters.AddWithValue("@pms_name", pms_name ?? "");
+                    cmd.Parameters.AddWithValue("@replace_attachment", replace_attachment ?? "");
+                    cmd.Parameters.AddWithValue("@replace_photo", replace_photo ?? "");
+                    cmd.Parameters.AddWithValue("@pms_area", pms_area ?? "");
+                    cmd.Parameters.AddWithValue("@pms_process", pms_process ?? "");
+                    cmd.Parameters.AddWithValue("@pms_issued_by", pms_issued_by ?? "");
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                return Json(new { status = "success", message = "Phenomenon saved successfully" });
+            }
+        }
 
-                string sql = @"INSERT INTO tbl_analysis(
+        [HttpPost]
+        public async Task<IActionResult> SaveAnalysis(string controlNo, IFormCollection form)
+        {
+            try
+            {
+                string analysis_cause = form["analysis_cause"];
+                string defect_details = form["defect_details"];
+                string problem_category = form["problem_category"];
+                string analysis_by = form["analysis_by"];
+                string problem_rank = form["problem_rank"];
+                string stepno = "2";
+
+                DateTime? finish_date = null;
+                if (!string.IsNullOrWhiteSpace(form["finish_date"]))
+                    finish_date = DateTime.Parse(form["finish_date"]);
+
+                var uploadedFiles = form.Files.Where(f => f.Name == "cause_photo[]").ToList();
+                List<string> analysisFilePaths = new List<string>();
+
+                if (uploadedFiles.Count > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload/AnalysisImages");
+
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    int index = 1;
+
+                    foreach (var file in uploadedFiles)
+                    {
+                        string extension = Path.GetExtension(file.FileName).ToLower();
+
+                        string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".avi" };
+
+                        if (!allowedExtensions.Contains(extension))
+                            continue;
+
+                        // 🔥 unique filename (safe)
+                        string uniqueFileName = $"{controlNo}_{Guid.NewGuid()}{extension}";
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        analysisFilePaths.Add(Path.Combine("upload/AnalysisImages/", uniqueFileName));
+                        index++;
+                    }
+                }
+
+                // ================= ATTACHMENT =================
+                string attachmentPath = null;
+                string attachmentName = null;
+                var attachmentFile = form.Files["defect_attachment"];
+
+                if (attachmentFile != null && attachmentFile.Length > 0)
+                {
+                    var attachmentFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "AnalysisFiles");
+
+                    if (!Directory.Exists(attachmentFolder))
+                        Directory.CreateDirectory(attachmentFolder);
+
+                    attachmentName = attachmentFile.FileName;
+
+                    string uniqueFileName = controlNo + Path.GetExtension(attachmentFile.FileName);
+                    var filePath = Path.Combine(attachmentFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await attachmentFile.CopyToAsync(stream);
+                    }
+
+                    attachmentPath = Path.Combine("upload/AnalysisFiles/", uniqueFileName);
+                }
+
+                // ================= DATABASE =================
+                using (var con = _db.GetConnection())
+                {
+                    await con.OpenAsync();
+
+                    string sql = @"INSERT INTO tbl_analysis(
                             control_no,
                             analysis_cause,
                             defect_analysis_details,
@@ -134,23 +191,47 @@ namespace NMPMS.Controllers
                             analysis_by = EXCLUDED.analysis_by,
                             problem_rank = EXCLUDED.problem_rank;";
 
-                using (var cmd = new NpgsqlCommand(sql, con))
-                {
-                    cmd.Parameters.AddWithValue("@controlNo", controlNo);
-                    cmd.Parameters.AddWithValue("@analysis_cause", analysis_cause ?? "");
-                    cmd.Parameters.AddWithValue("@defect_details", defect_details ?? "");
-                    cmd.Parameters.AddWithValue("@problem_category", problem_category ?? "");
-                    cmd.Parameters.AddWithValue("@finish_date", finish_date ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@analysis_by", analysis_by ?? "");
-                    cmd.Parameters.AddWithValue("@problem_rank", problem_rank ?? "");
-                    cmd.Parameters.AddWithValue("@defect_attachment", attachmentPath ?? "");
-                    cmd.Parameters.AddWithValue("@cause_photo", analysis_imagePath ?? "");
+                    using (var cmd = new NpgsqlCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@controlNo", controlNo ?? "");
+                        cmd.Parameters.AddWithValue("@analysis_cause", analysis_cause ?? "");
+                        cmd.Parameters.AddWithValue("@defect_details", defect_details ?? "");
+                        cmd.Parameters.AddWithValue("@problem_category", problem_category ?? "");
+                        cmd.Parameters.AddWithValue("@finish_date", finish_date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@analysis_by", analysis_by ?? "");
+                        cmd.Parameters.AddWithValue("@problem_rank", problem_rank ?? "");
+                        cmd.Parameters.AddWithValue("@defect_attachment", attachmentPath ?? "");
 
-                    await cmd.ExecuteNonQueryAsync();
+                        // 🔥 DO NOT store single image string anymore
+                        cmd.Parameters.AddWithValue("@cause_photo", DBNull.Value);
+
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+
+                    // ================= SAVE EACH IMAGE =================
+                    foreach (var path in analysisFilePaths)
+                    {
+                        string fileSql = @"INSERT INTO pms_problem_files (control_no, file_path, steps)
+                                   VALUES (@control_no, @file_path, @steps)";
+
+                        using (var fileCmd = new NpgsqlCommand(fileSql, con))
+                        {
+                            fileCmd.Parameters.AddWithValue("control_no", controlNo);
+                            fileCmd.Parameters.AddWithValue("file_path", path);
+                            fileCmd.Parameters.AddWithValue("steps",
+                                int.TryParse(stepno, out int stepsValue) ? stepsValue : (object)DBNull.Value);
+
+                            await fileCmd.ExecuteNonQueryAsync();
+                        }
+                    }
                 }
-            }
 
-            return Json(new { status = "success", message = "Analysis saved" });
+                return Json(new { status = "success", message = "Analysis saved successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = "error", message = ex.Message });
+            }
         }
         [HttpPost]
         public async Task<IActionResult> SaveImmediate_Action(string controlNo, IFormCollection form)
@@ -169,7 +250,6 @@ namespace NMPMS.Controllers
             string enough_stocks_qty = form["enough_stocks_qty"];
             string trial_reason = form["trial_reason"];
             string sorting_result = form["sorting_result"];
-
             string action_by = form["action_by"];
 
             DateTime? action_date = null;
@@ -194,7 +274,7 @@ namespace NMPMS.Controllers
                     await attachmentFile.CopyToAsync(stream);
                 }
 
-                attachmentPath = Path.Combine("upload/ImmediateAction", uniqueFileName);
+                attachmentPath = Path.Combine("upload/ImmediateAction/", uniqueFileName);
             }
 
             using (var con = _db.GetConnection())
@@ -202,45 +282,63 @@ namespace NMPMS.Controllers
                 await con.OpenAsync();
 
                 string sql = @"INSERT INTO public.tbl_immediate_action(
-                        control_no,
-                        assembly,
-                        parts,
-                        machine,
-                        system,
-                        ia_attachement,
-                        fg_treatment,
-                        process_change,
-                        wi_change,
-                        re_education,
-                        change_manpower,
-                        other,
-                        action_date,
-                        date_added,
-                        added_by,
-                        stock_qty,
-                        reason,
-                        sort_result,
-                    )
-                    VALUES(
-                        @control_no,
-                        @assembly,
-                        @parts,
-                        @machine,
-                        @system,
-                        @attachment,
-                        @fg_treatment,
-                        @process_change,
-                        @wi_change,
-                        @re_education,
-                        @change_manpower,
-                        @other,
-                        @action_date,
-                        NOW(),
-                        @added_by,
-                        @enough_stocks_qty,
-                        @trial_reason,
-                        @sorting_result,
-                    );";
+                                control_no,
+                                assembly,
+                                parts,
+                                machine,
+                                system,
+                                ia_attachement,
+                                fg_treatment,
+                                process_change,
+                                wi_change,
+                                re_education,
+                                change_manpower,
+                                other,
+                                action_date,
+                                date_added,
+                                added_by,
+                                stock_qty,
+                                reason,
+                                sort_result
+                            )
+                            VALUES(
+                                @control_no,
+                                @assembly,
+                                @parts,
+                                @machine,
+                                @system,
+                                @attachment,
+                                @fg_treatment,
+                                @process_change,
+                                @wi_change,
+                                @re_education,
+                                @change_manpower,
+                                @other,
+                                @action_date,
+                                NOW(),
+                                @added_by,
+                                @enough_stocks_qty,
+                                @trial_reason,
+                                @sorting_result
+                            )
+                            ON CONFLICT (control_no)
+                            DO UPDATE SET
+                                assembly = EXCLUDED.assembly,
+                                parts = EXCLUDED.parts,
+                                machine = EXCLUDED.machine,
+                                system = EXCLUDED.system,
+                                ia_attachement = EXCLUDED.ia_attachement,
+                                fg_treatment = EXCLUDED.fg_treatment,
+                                process_change = EXCLUDED.process_change,
+                                wi_change = EXCLUDED.wi_change,
+                                re_education = EXCLUDED.re_education,
+                                change_manpower = EXCLUDED.change_manpower,
+                                other = EXCLUDED.other,
+                                action_date = EXCLUDED.action_date,
+                                added_by = EXCLUDED.added_by,
+                                stock_qty = EXCLUDED.stock_qty,
+                                reason = EXCLUDED.reason,
+                                sort_result = EXCLUDED.sort_result;";
 
                 using (var cmd = new NpgsqlCommand(sql, con))
                 {
@@ -258,13 +356,17 @@ namespace NMPMS.Controllers
                     cmd.Parameters.AddWithValue("@other", other ?? "");
                     cmd.Parameters.AddWithValue("@action_date", action_date ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@added_by", action_by ?? "");
-                    cmd.Parameters.AddWithValue("@enough_stocks_qty", enough_stocks_qty ?? "");
-                    cmd.Parameters.AddWithValue("@trial_reason", trial_reason ?? "");
-                    cmd.Parameters.AddWithValue("@sorting_result", sorting_result ?? "");
+                    //cmd.Parameters.AddWithValue("@enough_stocks_qty", enough_stocks_qty ?? "");
+                    cmd.Parameters.Add("@enough_stocks_qty", NpgsqlTypes.NpgsqlDbType.Integer).Value =
+                    string.IsNullOrWhiteSpace(enough_stocks_qty)
+                        ? (object)DBNull.Value
+                        : int.Parse(enough_stocks_qty);
+                                    cmd.Parameters.AddWithValue("@trial_reason", trial_reason ?? "");
+                                    cmd.Parameters.AddWithValue("@sorting_result", sorting_result ?? "");
 
-                    await cmd.ExecuteNonQueryAsync();
-                }
-            }
+                                    await cmd.ExecuteNonQueryAsync();
+                                }
+                            }
 
             return Json(new { status = "success", message = "Immediate Action saved" });
         }
@@ -284,11 +386,11 @@ namespace NMPMS.Controllers
                 action_date = DateTime.Parse(form["implematation_Date"]);
 
             string attachmentPath = null;
-            var attachmentFile = form.Files["detail_attachment"];
+            var attachmentFile = form.Files["s4_detail_attachment"];
 
             if (attachmentFile != null && attachmentFile.Length > 0)
             {
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "ImmediateAction");
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "TempAction");
 
                 if (!Directory.Exists(folder))
                     Directory.CreateDirectory(folder);
@@ -301,7 +403,7 @@ namespace NMPMS.Controllers
                     await attachmentFile.CopyToAsync(stream);
                 }
 
-                attachmentPath = Path.Combine("upload/ImmediateAction", uniqueFileName);
+                attachmentPath = Path.Combine("upload/TempAction/", uniqueFileName);
             }
 
             using (var con = _db.GetConnection())

@@ -31,18 +31,18 @@ function loadImmediateAction(controlNo) {
                 if (d.attachment != null) {
                     const fileName = d.attachment.split(/[/\\]/).pop();
 
-                    $('#attachmentPreviewContainerIA').html(`
+                    $('#s3_attachmentPreviewContainer').html(`
                             <div class="mt-1 text-muted small">
                                 ${fileName}
                             </div>
                             <button class="btn btn-sm btn-primary mt-2"
-                                    onclick="viewAttachment('${fileName}','3')">
+                                    onclick="viewAttachment('${d.attachment}','3')">
                                 View Attachment
                             </button>
                         `);
 
                 } else {
-                    $('#attachmentPreviewContainerIA').html(
+                    $('#s3_attachmentPreviewContainer').html(
                         '<small class="text-muted">No Attachment</small>'
                     );
                 }

@@ -99,8 +99,8 @@ namespace NMPMS.Controllers
                 {
                     await con.OpenAsync();
 
-                    string sql = @"INSERT INTO public.tbl_users(empno, name, adid, position, section, section_code, user_level, user_status)
-                    VALUES(@biph_id, @fullname, @adid, @position, @section, @section_code, @authority, 1)";
+                    string sql = @"INSERT INTO public.tbl_users(empno, name, adid, position, section, section_code, user_level, user_status,email)
+                    VALUES(@biph_id, @fullname, @adid, @position, @section, @section_code, @authority, 1,@email)";
 
                     int? authorityInt = int.TryParse(form["authority"], out int tempValue) ? tempValue : (int?)null;
 
@@ -114,6 +114,7 @@ namespace NMPMS.Controllers
                         cmd.Parameters.AddWithValue("section", (object)section ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("section_code", (object)section_code ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("authority", (object)authorityInt ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("email", (object)email ?? DBNull.Value);
 
                         await cmd.ExecuteNonQueryAsync();
                     }

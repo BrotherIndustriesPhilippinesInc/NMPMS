@@ -1,6 +1,5 @@
 ﻿
 function loadAnalysis(controlNo) {
-
     fetch(`/Analysis/GetAnalysis?control_no=${controlNo}`)
         .then(res => res.json())
         .then(data => {
@@ -18,12 +17,7 @@ function loadAnalysis(controlNo) {
                 document.getElementById("finish_date").value = d.finish_date || "";
                 document.getElementById("problem_rank").value = d.problem_rank || "";
 
-                // attachment preview
                 if (d.attachment != null) {
-                    //document.getElementById("attachmentPreviewContainer").innerHTML =
-                    //    `<a href="/${d.attachment}" target="_blank">View Attachment</a>`;
-
-                    //viewAttachment(filename, steps)
                     const fileName = d.attachment.split(/[/\\]/).pop();
                     console.log(fileName);
 
@@ -32,46 +26,15 @@ function loadAnalysis(controlNo) {
                             ${fileName}
                         </div>
                         <button class="btn btn-sm btn-primary mt-2" 
-                                onclick="viewAttachment('${fileName}','${steps}')">
+                                onclick="viewAttachment('${d.attachment}')">
                             View Attachment
                         </button>
                     `);
                 } else {
                     $('#attachmentPreviewContainer').html('<small class="text-muted">No Attachment</small>');
                 }
-
-                // image preview
-                //if (d.image_cause) {
-                //    document.getElementById("photoPreviewContainer").innerHTML =
-                //        `<img src="/${d.image_cause}" style="max-width:150px;">`;
-                //}
-                if (d.image_cause) {
-
-                    const cleanPath = d.image_cause.replace(/\\/g, "/");
-
-                    const ext = cleanPath.split('.').pop().toLowerCase();
-
-                    let html = '';
-
-                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                        html = `
-                            <img src="${cleanPath}" 
-                                 style="height:120px; border-radius:8px; cursor:pointer;"
-                                 onclick="viewFile('${cleanPath}')">
-                        `;
-                                    } else {
-                                        html = `
-                            <video src="${cleanPath}" 
-                                   style="height:120px;" controls>
-                            </video>
-                        `;
-                    }
-
-                    $('#photoPreviewContainer1').html(html);
-
-                } else {
-                    $('#photoPreviewContainer1').html('<small class="text-muted">No Photo Uploaded</small>');
-                }
+                loadProblemFiles(controlNo, 2, "photoPreviewContainer1");
+               
 
             }
 

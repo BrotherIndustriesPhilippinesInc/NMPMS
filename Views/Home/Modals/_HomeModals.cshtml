@@ -172,9 +172,13 @@
                                     <input type="text"
                                            class="form-control form-control-sm"
                                            id="person_incharge"
-                                           value="Jeffrey Reyes"
+                                           value="@ViewBag.UserId"
                                            disabled>
                                      <input hidden id="stepno" value="1"/>
+                                     <script>
+                                        var userId = '@Context.Session.GetString("username")';
+                                        document.getElementById("person_incharge").value = userId;
+                                     </script>
                                 </div>
 
                                 <div class="col-md-6 text-end">

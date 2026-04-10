@@ -23,6 +23,7 @@ function getuserDetails() {
                 $('#date_added').val(data.formattedDate);
                 $('#profileImage').attr('src', data.user_imgPath || 'images/avatar/1.png');
                 $('#user_profile').attr('src', data.user_imgPath || 'images/avatar/1.png');
+                $('#email').val(data.email);
             }
         })
         .catch(error => console.error('Error fetching data:', error));

@@ -23,46 +23,75 @@
 //  })
 //  .catch(error => console.error('Error fetching data:', error));
 
-$('#activateBtn').on('click', function () {
+$(document).ready(function () {
 
-    const model = $('.model-select').val();
-    const stage = $('.stage-select').val();
+    // ✅ Load ALL data on page load (no filter)
+    loadPmlData();
 
-    if (!model || !stage) {
-        Swal.fire('Missing Selection', 'Please select both Model and Stage.', 'warning');
-        return;
-    }
+    // ✅ Activate button (with filter)
+    $('#activateBtn').on('click', function () {
 
-    document.getElementById('modelInput').value = model;
-    document.getElementById('stageInput').value = stage;
+        const model = $('.model-select').val();
+        const stage = $('.stage-select').val();
 
-    $('#thModel').text(model);
-    $('#thStage').text(stage);
+        if (!model || !stage) {
+            Swal.fire('Missing Selection', 'Please select both Model and Stage.', 'warning');
+            return;
+        }
 
-    $('#createIssueBtn').removeClass('d-none');
+        document.getElementById('modelInput').value = model;
+        document.getElementById('stageInput').value = stage;
 
-    fetch(`/Home/fetch_graph?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Filtered Data:", data);
-            renderProblemCategoryChart(data);
-           
-        })
-        .catch(error => console.error('Error fetching data:', error));
-    fetch(`/Home/fetch_pml?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Filtered Data:", data);
-            pml_listTable(data);
+        $('#thModel').text(model);
+        $('#thStage').text(stage);
 
-        })
-        .catch(error => console.error('Error fetching data:', error));
+        $('#createIssueBtn').removeClass('d-none');
+
+        // ✅ Load filtered data
+        loadPmlData(stage, model);
+    });
+
 });
 
+function loadPmlData(stage = "", model = "") {
 
+    let url = `/Home/fetch_pml`;
+
+    if (stage && model) {
+        url += `?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`;
+    }
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log("PML Data:", data);
+            pml_listTable(data);
+        })
+        .catch(error => console.error('Error fetching PML:', error));
+    let chartUrl = `/Home/fetch_graph`;
+
+    if (stage && model) {
+        chartUrl += `?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`;
+    }
+
+    fetch(chartUrl)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Chart Data:", data);
+            renderProblemCategoryChart(data);
+        })
+        .catch(error => console.error('Error fetching chart:', error));
+}
+
+
+/* ============================
+   ✅ TABLE RENDER
+============================ */
 function pml_listTable(data) {
+
     updateStatCards(data);
 
+    // ✅ Destroy existing table safely
     if ($.fn.DataTable.isDataTable('#tbl_pml')) {
         $('#tbl_pml').DataTable().clear().destroy();
     }
@@ -73,15 +102,13 @@ function pml_listTable(data) {
     const fragment = document.createDocumentFragment();
 
     if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tbody id="tbody_pml">
-            <tr id="noDataRow">
+        tableBody.innerHTML = `
+            <tr>
                 <td colspan="16" class="text-center text-muted">
-                    No selected data yet
+                    No data available
                 </td>
-            </tr>
-        </tbody>`;
+            </tr>`;
         return;
-
     }
 
     data.forEach((item, index) => {
@@ -113,46 +140,47 @@ function pml_listTable(data) {
 
     tableBody.appendChild(fragment);
 
-    const table = $('#tbl_pml').DataTable({
+    // ✅ Reinitialize DataTable
+    $('#tbl_pml').DataTable({
         responsive: true,
         autoWidth: false,
         deferRender: true,
         pageLength: 10
     });
 
+    // ✅ Row double click
     $('#tbl_pml tbody').off('dblclick').on('dblclick', 'tr', function () {
         const rowData = JSON.parse(this.dataset.rowData);
         openPmlModal(rowData);
     });
-
-    function updateStatCards(data) {
-
-        let counts = {
-            "Cause Investigation": 0,
-            "Temporary Action": 0,
-            "Permanent Action": 0,
-            "Closed": 0
-        };
-
-        data.forEach(item => {
-            if (counts[item.pms_create] !== undefined) {
-                counts[item.pms_create]++;
-            }
-        });
-
-        $('.stat-card').each(function () {
-            const status = $(this).data("status");
-
-            if (status === "ALL") {
-                $(this).find('.count').text(data.length);
-            }
-            else {
-                $(this).find('.count').text(counts[status] || 0);
-            }
-
-        });
-    }
 }
+
+function updateStatCards(data) {
+
+    let counts = {
+        "Cause Investigation": 0,
+        "Temporary Action": 0,
+        "Permanent Action": 0,
+        "Closed": 0
+    };
+
+    data.forEach(item => {
+        if (counts[item.pms_create] !== undefined) {
+            counts[item.pms_create]++;
+        }
+    });
+
+    $('.stat-card').each(function () {
+        const status = $(this).data("status");
+
+        if (status === "ALL") {
+            $(this).find('.count').text(data.length);
+        } else {
+            $(this).find('.count').text(counts[status] || 0);
+        }
+    });
+}
+
 
 let chartInstance = null;
 
@@ -195,25 +223,21 @@ function renderProblemCategoryChart(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // ✅ THIS IS KEY
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     labels: {
-                        color: '#fff' // optional: white text for dark background
+                        color: '#fff'
                     }
                 }
             },
             scales: {
                 x: {
-                    ticks: {
-                        color: '#fff'
-                    }
+                    ticks: { color: '#fff' }
                 },
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        color: '#fff'
-                    }
+                    ticks: { color: '#fff' }
                 }
             }
         }
@@ -248,7 +272,7 @@ const PHOTO_FOLDERS = {
 function openPmlModal(item) {
   // $('#control_no').val(item.control_no);
   const control_no = item.control_no;
-  $('#progress').text(item.pms_create);
+  $('#progress').val(item.pms_create);
   $('#time').text(item.issued_date);
   $('#pic').text(item.person_incharge);
   $('#title').text(item.problem_name);
@@ -314,28 +338,28 @@ function openPmlModal(item) {
 //    });
 //}
 
-function viewAttachment(filename, step) {
+//function viewAttachment(filename, step) {
 
-    const folderName = FILE_FOLDERS[step] || 'AttachmentFile';
-    const fileUrl = `upload/${folderName}/${filename}`;
-    const ext = filename.split('.').pop().toLowerCase();
+//    const folderName = FILE_FOLDERS[step] || 'AttachmentFile';
+//    const fileUrl = `upload/${folderName}/${filename}`;
+//    const ext = filename.split('.').pop().toLowerCase();
 
-    let content = '';
+//    let content = '';
 
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-        content = `<img src="${fileUrl}" style="max-width:100%; max-height:80vh;">`;
-    } else {
-        content = `<iframe src="${fileUrl}" style="width:100%; height:75vh; border:none;"></iframe>`;
-    }
+//    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+//        content = `<img src="${fileUrl}" style="max-width:100%; max-height:80vh;">`;
+//    } else {
+//        content = `<iframe src="${fileUrl}" style="width:100%; height:75vh; border:none;"></iframe>`;
+//    }
 
-    Swal.fire({
-        title: filename,
-        html: content,
-        width: '95%',
-        showCloseButton: true,
-        showConfirmButton: false
-    });
-}
+//    Swal.fire({
+//        title: filename,
+//        html: content,
+//        width: '95%',
+//        showCloseButton: true,
+//        showConfirmButton: false
+//    });
+//}
 function pmsModal() {
   const model = document.getElementById('modelInput').value || '';
   const stage = document.getElementById('stageInput').value || '';
@@ -426,37 +450,29 @@ function renderPreview() {
     photoDrop.appendChild(grid);
 }
 
-// Click upload
 photoDrop.addEventListener('click', () => photoInput.click());
 
-// Input select
 photoInput.addEventListener('change', (e) => {
     handleFiles(e.target.files);
 });
 
-// Drag over
 photoDrop.addEventListener('dragover', (e) => {
     e.preventDefault();
     photoDrop.classList.add('dragover');
 });
 
-// Drag leave
 photoDrop.addEventListener('dragleave', () => {
     photoDrop.classList.remove('dragover');
 });
 
-// Drop
 photoDrop.addEventListener('drop', (e) => {
     e.preventDefault();
     photoDrop.classList.remove('dragover');
     handleFiles(e.dataTransfer.files);
 });
 
-// Handle files
 function handleFiles(files) {
     for (let file of files) {
-
-        // prevent duplicate
         if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
             continue;
         }
@@ -467,7 +483,6 @@ function handleFiles(files) {
     renderPreview();
 }
 
-// Reset when modal closes
 document.getElementById('pmsModal').addEventListener('hidden.bs.modal', () => {
     selectedFiles = [];
     renderPreview();
@@ -480,11 +495,9 @@ function savePMS() {
     const form = document.getElementById('pmsForm');
     const formData = new FormData(form);
     const steps = document.getElementById('stepno').value;
-
-    // 🔥 append files manually
-    selectedFiles.forEach(file => {
-        formData.append('problem_photos[]', file);
-    });
+    //selectedFiles.forEach(file => {
+    //    formData.append('problem_photos[]', file);
+    //});
     formData.append('stepno', steps)
 
     fetch('/Home/CreateIssue', {

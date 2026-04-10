@@ -20,27 +20,27 @@ function loadtemp(controlNo) {
                 //document.getElementById("implematation_Date").value = temp.action_date ? temp.action_date.split("T")[0] : "";
 
                 // Attachment preview
-                //if (d.attachment != null) {
+                if (temp.s4_attachment != null) {
 
-                //    const fileName = d.attachment.split(/[/\\]/).pop();
+                    const fileName = temp.s4_attachment.split(/[/\\]/).pop();
 
-                //    $('#attachmentPreviewContainerIA').html(`
-                //            <div class="mt-1 text-muted small">
-                //                ${fileName}
-                //            </div>
-                //            <button class="btn btn-sm btn-primary mt-2"
-                //                    onclick="viewAttachment('${fileName}','3')">
-                //                View Attachment
-                //            </button>
-                //        `);
+                    $('#s4_attachmentPreviewContainer').html(`
+                            <div class="mt-1 text-muted small">
+                                ${fileName}
+                            </div>
+                            <button class="btn btn-sm btn-primary mt-2"
+                                    onclick="viewAttachment('${temp.s4_attachment}','3')">
+                                View Attachment
+                            </button>
+                        `);
 
-                //} else {
+                } else {
 
-                //    $('#attachmentPreviewContainerIA').html(
-                //        '<small class="text-muted">No Attachment</small>'
-                //    );
+                    $('#s4_attachmentPreviewContainer').html(
+                        '<small class="text-muted">No Attachment</small>'
+                    );
 
-                //}
+                }
 
             }
 

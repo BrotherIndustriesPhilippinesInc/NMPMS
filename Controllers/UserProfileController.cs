@@ -48,6 +48,7 @@ namespace NMPMS.Controllers
                                 string position = dr["Position"].ToString();
                                 string status = dr["user_status"].ToString();
                                 string userlevel = dr["user_level"].ToString();
+                                string email = dr["email"].ToString();
                                 string user_img = dr["user_img"].ToString();
                                 DateTime dateAdded = Convert.ToDateTime(dr["date_added"]);
                                 string formattedDate = dateAdded.ToString("MMMM dd, yyyy");
@@ -67,7 +68,9 @@ namespace NMPMS.Controllers
                                     status,
                                     userlevel,
                                     user_imgPath,
-                                    formattedDate
+                                    formattedDate,
+                                    email,
+                                    dateAdded
                                 });
                             }
                         }

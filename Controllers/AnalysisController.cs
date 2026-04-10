@@ -2,6 +2,7 @@
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Npgsql;
 using Org.BouncyCastle.Asn1.Crmf;
+using System.Data;
 using System.Diagnostics;
 using System.Net.Mail;
 
@@ -74,7 +75,7 @@ namespace NMPMS.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProblemFiles(string control_no)
+        public async Task<IActionResult> GetProblemFiles(string control_no,int steps)
         {
             var list = new List<string>();
 
@@ -84,11 +85,13 @@ namespace NMPMS.Controllers
 
                 string sql = @"SELECT file_path 
                        FROM pms_problem_files 
-                       WHERE control_no = @control_no";
+                       WHERE control_no = @control_no and steps = @steps";
 
                 using (var cmd = new NpgsqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@control_no", control_no);
+                    //cmd.Parameters.AddWithValue("@steps", steps);
+                    cmd.Parameters.Add("@steps", NpgsqlTypes.NpgsqlDbType.Integer).Value = Convert.ToInt32(steps);
 
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -246,6 +249,7 @@ namespace NMPMS.Controllers
                                         s4_machine = reader["machine"]?.ToString(),
                                         s4_system = reader["system"]?.ToString(),
                                         s4_actionby = reader["action_by"]?.ToString(),
+                                        s4_attachment = reader["temp_attachment"]?.ToString(),
                                         s4_impdate = reader["implementation_date"]?.ToString(),
                                         s4_pic = reader["pic"]?.ToString(),
 

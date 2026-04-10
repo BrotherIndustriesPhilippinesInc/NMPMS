@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NMPMS.Models;
 using NMPMS.Services;
 using NMPMS.ViewModels;
 using Npgsql;
 using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 namespace NMPMS.Controllers;
 
 public class HomeController : Controller
@@ -68,13 +70,23 @@ public class HomeController : Controller
         using (var con = _db.GetConnection())
         {
             con.Open();
+            int.TryParse(HttpContext.Session.GetString("userlevel"), out int userlevel);
 
             string query = @"SELECT control_no,pms_create,person_incharge,
-                        problem_name,phenomenon_details,stage,model,
-                        serial_number,area_detection,process,
-                        issued_by, issued_date,part_name,supplier,attachment_name,problem_photo
-                        FROM pms_records 
-                        WHERE stage = @stage AND model = @model";
+            problem_name,phenomenon_details,stage,model,
+            serial_number,area_detection,process,
+            issued_by, issued_date,part_name,supplier,attachment_name,problem_photo
+            FROM pms_records WHERE 1=1";
+
+         
+            if (!string.IsNullOrEmpty(stage) && !string.IsNullOrEmpty(model))
+            {
+                query += " AND stage = @stage AND model = @model";
+            }
+            else if (userlevel != 1)
+            {
+                query += " AND stage = @stage AND model = @model";
+            }
 
             using (var cmd = new NpgsqlCommand(query, con))
             {
@@ -111,7 +123,6 @@ public class HomeController : Controller
 
         return Ok(list);
     }
-
     [HttpPost]
     public IActionResult createnew(string mName, string sName)
     {
@@ -178,7 +189,8 @@ public class HomeController : Controller
                 issuedDate = DateTime.Parse(form["issued_date"]);
             }
 
-            string personInCharge = "Jeffrey Reyes";
+            //string personInCharge = "Jeffrey Reyes";
+            var personInCharge = HttpContext.Session.GetString("username"); 
 
             var uploadedFiles = form.Files.Where(f => f.Name == "problem_photos[]").ToList();
             List<string> filePaths = new List<string>();
@@ -307,6 +319,109 @@ public class HomeController : Controller
                 }
             }
 
+
+            string link = $"http://apbiphbpsts01:2026/";
+            string formattedDate = issuedDate?.ToString("dd-MMM") ?? "";
+
+            using (MailMessage mail = new MailMessage())
+            {
+                mail.From = new MailAddress("nmpms@brother-biph.com.ph", "[BIPH_NMPMS] New Problem Information");
+                mail.To.Add("charisse.devera@brother-biph.com.ph");
+                mail.To.Add("bheanicole.corcolon@brother-biph.com.ph");
+                mail.CC.Add("jeffrey.reyes@brother-biph.com.ph");
+                mail.CC.Add("arravellah.magsino@brother-biph.com.ph");
+                mail.Subject = "[BIPH_NMPMS] " + model + " " + stage + " New Problem Information";
+                mail.IsBodyHtml = true;
+
+                mail.Body = $@"
+                    <div style='font-family:Segoe UI, Arial, sans-serif; background:#f4f6f9; padding:20px;'>
+
+                        <div style='max-width:700px; margin:auto; background:#ffffff; border-radius:10px; 
+                                    box-shadow:0 4px 15px rgba(0,0,0,0.1); overflow:hidden;'>
+
+                            <!-- Header -->
+                            <div style='background:#1f2937; color:#fff; padding:15px 20px; font-size:18px; font-weight:bold;'>
+                                BIPH New Model Problem Management System
+                            </div>
+
+                            <!-- Body -->
+                            <div style='padding:20px; color:#333;'>
+
+                                <h2 style='margin-top:0; color:#111827;'>New Problem Notification</h2>
+
+                                <table style='width:100%; border-collapse:collapse; font-size:14px;'>
+
+                                    <tr>
+                                        <td style='padding:8px; font-weight:bold;'>Problem Control #:</td>
+                                        <td style='padding:8px;'>#{controlNo}</td>
+                                    </tr>
+
+                                    <tr style='background:#f9fafb;'>
+                                        <td style='padding:8px; font-weight:bold;'>Problem Name:</td>
+                                        <td style='padding:8px;'>{problemName}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style='padding:8px; font-weight:bold;'>Process:</td>
+                                        <td style='padding:8px;'>{process}</td>
+                                    </tr>
+
+                                    <tr style='background:#f9fafb;'>
+                                        <td style='padding:8px; font-weight:bold;'>Encountered Date:</td>
+                                        <td style='padding:8px;'>{formattedDate}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style='padding:8px; font-weight:bold;'>Serial Number:</td>
+                                        <td style='padding:8px;'>{serialNumber}</td>
+                                    </tr>
+
+                                    <tr style='background:#f9fafb;'>
+                                        <td style='padding:8px; font-weight:bold;'>Area of Detection:</td>
+                                        <td style='padding:8px;'>{areaDetection}</td>
+                                    </tr>
+
+                                </table>
+
+                                <!-- Phenomenon -->
+                                <div style='margin-top:20px;'>
+                                    <strong>Phenomenon Details:</strong>
+                                    <div style='margin-top:8px; padding:12px; background:#f3f4f6; border-radius:6px;'>
+                                        {phenomenonDetails}
+                                    </div>
+                                </div>
+
+                                <!-- Button -->
+                                <div style='text-align:center; margin:25px 0;'>
+                                    <a href='{link}' style='background:#2563eb; color:#fff; padding:12px 20px; 
+                                       text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
+                                        View Full Details
+                                    </a>
+                                </div>
+
+                                <!-- Footer -->
+                                <div style='font-size:12px; color:#6b7280; border-top:1px solid #e5e7eb; padding-top:15px;'>
+                                    This is an automated message from <b>BIPH New Model Problem Management System</b><br>
+                                    Please do not reply.
+                                    <br><br>
+                                    Regards,<br>
+                                    <b>BIPH DE Concurrent</b>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    ";
+
+                using (SmtpClient smtp = new SmtpClient("smtp.brother.co.jp", 25))
+                {
+                    smtp.UseDefaultCredentials = true;
+                    smtp.EnableSsl = false;
+
+                    await smtp.SendMailAsync(mail);
+                }
+            }
+
             return Json(new { status = "success", control_no = controlNo });
         }
         catch (Exception ex)
@@ -323,9 +438,21 @@ public class HomeController : Controller
         using (var con = _db.GetConnection())
         {
             con.Open();
+            int.TryParse(HttpContext.Session.GetString("userlevel"), out int userlevel);
 
-            string query = @"SELECT b.stage, b.model, a.problem_category FROM public.tbl_analysis a join public.pms_records b on a.control_no = b.control_no
-                        WHERE b.stage = @stage AND b.model = @model";
+            string query = @"SELECT b.stage, b.model, a.problem_category FROM public.tbl_analysis a join public.pms_records b on a.control_no = b.control_no WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(stage) && !string.IsNullOrEmpty(model))
+            {
+                query += " AND stage = @stage AND model = @model";
+            }
+            else if (userlevel != 1)
+            {
+                query += " AND stage = @stage AND model = @model";
+            }
+
+
+           
 
             using (var cmd = new NpgsqlCommand(query, con))
             {

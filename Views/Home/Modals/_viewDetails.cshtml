@@ -135,7 +135,11 @@
 
                         <div class="pms-row">
                             <div class="pms-label">Person In-Charge:</div>
-                            <div class="pms-value" id="pic"></div>
+                            @* <div class="pms-value" id="pic"></div> *@
+                            <select class="form-select form-select-sm mb-2" id="pic" name="pic">
+                                <option value="">Select Person Incharge</option>
+                            </select>
+
                         </div>
 
                         <div class="pms-row">
@@ -154,17 +158,17 @@
 
                         <div class="pms-row">
                             <div class="pms-label">Part Code:</div>
-                            <div class="pms-value" id="pms_part_code"></div>
+                            <div class="pms-value" id="pms_part_code" style="text-transform: uppercase;"></div>
                         </div>
 
                         <div class="pms-row">
                             <div class="pms-label">Part Name:</div>
-                            <div class="pms-value" id="pms_part_name"></div>
+                            <div class="pms-value" id="pms_part_name" style="text-transform: uppercase;"></div>
                         </div>
 
                         <div class="pms-row">
                             <div class="pms-label">Supplier:</div>
-                            <div class="pms-value" id="pms_supplier_name"></div>
+                            <div class="pms-value" id="pms_supplier_name" style="text-transform: uppercase;"></div>
                         </div>
                     </div>
                 </div>
@@ -218,21 +222,29 @@
                                 </div>
                                 <div class="grid-2">
                                     <label class="form-label">Stage</label>
-                                    <input class="form-control" placeholder="Stage" id="pms_stage">
+                                    <input class="form-control" placeholder="Stage" id="pms_stage" data-readonly="true">
                                     <label class="form-label">Model</label>
-                                    <input class="form-control" placeholder="Model" id="pms_model">
+                                    <input class="form-control" placeholder="Model" id="pms_model" data-readonly="true">
                                     <label class="form-label">Serial</label>
-                                    <input class="form-control" placeholder="Serial" id="pms_serial">
+                                    <input class="form-control" placeholder="Serial" id="pms_serial" >
                                     <label class="form-label">Area</label>
                                     <input class="form-control" placeholder="Area" id="pms_area">
                                     <label class="form-label">Process</label>
                                     <input class="form-control" placeholder="Process" id="pms_process">
                                     <label class="form-label">Issued By</label>
-                                    <input class="form-control" placeholder="Issued By" id="pms_issued_by">
-                                </div>
+                                    <input class="form-control" placeholder="Issued By" id="pms_issued_by" data-readonly="true">
+                                    @* <div class="pms-title">Parts Related</div> *@
+                                    <label class="form-label">Part Code</label>
+                                    <input class="form-control" placeholder="Part Code" id="pms_partcode" style="text-transform: uppercase;">
+                                    <label class="form-label">Part Name</label>
+                                    <input class="form-control" placeholder="Part Name" id="pms_partname" style="text-transform: uppercase;">
+                                    <label class="form-label">Supplier</label>
+                                    <input class="form-control" placeholder="Supplier" id="pms_supplier" style="text-transform: uppercase;">
+                                    
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <!-- Repeat pattern -->
@@ -246,7 +258,7 @@
                         <!-- Analysis Cause -->
                         <div class="form-group d-flex flex-column">
                             <label for="analysis_cause" class="form-label">Analysis Cause</label>
-                            <input id="analysis_cause" class="form-control" placeholder="Enter analysis cause">
+                            <textarea id="analysis_cause" class="form-control" placeholder="Enter analysis cause"></textarea>
                         </div>
 
                         <!-- Defect Analysis Details -->
@@ -341,10 +353,10 @@
                             <textarea id="system" class="form-control"></textarea>
                         </div>
 
-                        <div class="form-group">
-                            <label>Action By</label>
-                            <input id="detail_action_by" class="form-control">
-                        </div>
+                        @* <div class="form-group"> *@
+                        @*     <label>Action By</label> *@
+                        @*     <input id="detail_action_by" class="form-control"> *@
+                        @* </div> *@
 
                         <div class="form-group">
                             <label>Attachment</label>
@@ -494,10 +506,10 @@
                             <textarea id="s4_system" class="form-control"></textarea>
                         </div>
 
-                        <div class="form-group">
-                            <label>Action By</label>
-                            <input id="s4_detail_action_by" class="form-control">
-                        </div>
+                        @* <div class="form-group"> *@
+                        @*     <label>Action By</label> *@
+                        @*     <input id="s4_detail_action_by" class="form-control"> *@
+                        @* </div> *@
 
                         <div class="form-group">
                             <label>Attachment</label>
@@ -512,7 +524,7 @@
 
                         <div class="form-group">
                             <label>Person In Charge</label>
-                            <input id="pic" type="text" class="form-control">
+                            <input id="s4_pic" name="s4_pic" type="text" class="form-control" value="">
                         </div>
 
                     </div>
@@ -549,6 +561,12 @@
                         <div class="form-group">
                             <label>Implementation Date</label>
                             <input id="s5_implematation_Date" type="date" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attachment</label>
+                            <div id="s5_attachmentPreviewContainer" class="mb-2"></div>
+                            <input id="s5_detail_attachment" type="file" class="form-control">
                         </div>
 
                         <div class="form-group">
@@ -634,9 +652,9 @@
                                 <option value="Light">Light</option>
                             </select>
                         </div>
-
+                         
                         <div class="form-group">
-                            <label>System</label>
+                            <label>Issued PIC</label>
                             <input id="s7_pic" class="form-control" />
                         </div>
                     </div>
@@ -656,5 +674,24 @@
     </div>
 </div>
 
+<script>
+    document.getElementById('action_date').valueAsDate = new Date();
+    document.getElementById('parts_action_date').valueAsDate = new Date();
+    document.getElementById('implematation_Date').valueAsDate = new Date();
 
+    const temp_pic = document.getElementById("s4_pic");
+    const s7_pic = document.getElementById("s7_pic");
+
+    if(!temp_pic.value){
+         var userId = '@Context.Session.GetString("username")';
+        temp_pic.value = userId;
+    }
+
+    if(!s7_pic.value){
+         var userId = '@Context.Session.GetString("username")';
+        s7_pic.value = userId;
+    }
+
+    
+</script>
 <script src="~/js/pages_js/details.js"></script>

@@ -16,6 +16,11 @@
                 document.getElementById("pms_process").value = pheno.pms_process || "";
                 document.getElementById("pms_issued_by").value = pheno.pms_issued_by || "";
                 document.getElementById("control_no_input").value = controlNo || "";
+                document.getElementById("pms_partcode").value = pheno.pms_partcode || "";
+                document.getElementById("pms_partname").value = pheno.pms_partname || "";
+                document.getElementById("pms_supplier").value = pheno.supplier || "";
+                //document.getElementById("pic").value = pheno.pic || "";
+
                 
 
                 if (pheno.attachment) {

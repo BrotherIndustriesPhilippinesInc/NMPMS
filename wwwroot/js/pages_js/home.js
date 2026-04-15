@@ -25,10 +25,8 @@
 
 $(document).ready(function () {
 
-    // ✅ Load ALL data on page load (no filter)
     loadPmlData();
 
-    // ✅ Activate button (with filter)
     $('#activateBtn').on('click', function () {
 
         const model = $('.model-select').val();
@@ -41,21 +39,37 @@ $(document).ready(function () {
 
         document.getElementById('modelInput').value = model;
         document.getElementById('stageInput').value = stage;
+      
 
-        $('#thModel').text(model);
-        $('#thStage').text(stage);
+        //if (!model && !stage) {
+        //    $('#thModel').text("ALL");
+        //    $('#thStage').text("New Model");
+        //}
+        //$('#thModel').text(model);
+        //$('#thStage').text(stage);
 
         $('#createIssueBtn').removeClass('d-none');
 
-        // ✅ Load filtered data
         loadPmlData(stage, model);
     });
 
 });
 
+
+function updateHeader(model, stage) {
+    if (!model && !stage) {
+        $('#thModel').text("All");
+        $('#thStage').text("New Model");
+    } else {
+        $('#thModel').text(model || "All");
+        $('#thStage').text(stage || "New Model");
+    }
+}
 function loadPmlData(stage = "", model = "") {
 
     let url = `/Home/fetch_pml`;
+
+    updateHeader(model, stage)
 
     if (stage && model) {
         url += `?stage=${encodeURIComponent(stage)}&model=${encodeURIComponent(model)}`;
@@ -84,14 +98,9 @@ function loadPmlData(stage = "", model = "") {
 }
 
 
-/* ============================
-   ✅ TABLE RENDER
-============================ */
 function pml_listTable(data) {
 
     updateStatCards(data);
-
-    // ✅ Destroy existing table safely
     if ($.fn.DataTable.isDataTable('#tbl_pml')) {
         $('#tbl_pml').DataTable().clear().destroy();
     }
@@ -140,7 +149,6 @@ function pml_listTable(data) {
 
     tableBody.appendChild(fragment);
 
-    // ✅ Reinitialize DataTable
     $('#tbl_pml').DataTable({
         responsive: true,
         autoWidth: false,
@@ -148,7 +156,6 @@ function pml_listTable(data) {
         pageLength: 10
     });
 
-    // ✅ Row double click
     $('#tbl_pml tbody').off('dblclick').on('dblclick', 'tr', function () {
         const rowData = JSON.parse(this.dataset.rowData);
         openPmlModal(rowData);
@@ -183,6 +190,18 @@ function updateStatCards(data) {
 
 
 let chartInstance = null;
+
+$(document).on("click", ".stat-card", function () {
+    let status = $(this).data("status");
+    let table = $('#tbl_pml').DataTable();
+
+    if (status === "ALL") {
+        table.search('').columns().search('').draw(); // clear ALL filters
+    } else {
+        table.columns().search(''); // reset other filters first
+        table.column(2).search('^' + status + '$', true, false).draw();
+    }
+});
 
 function renderProblemCategoryChart(data) {
 
@@ -244,17 +263,7 @@ function renderProblemCategoryChart(data) {
     });
 }
 
-$(document).on("click", ".stat-card", function () {
-    let status = $(this).data("status");
-    let table = $('#tbl_pml').DataTable();
 
-    if (status === "ALL") {
-        table.search('').draw();
-    }
-    else {
-        table.column(2).search(status).draw();
-    }
-});
 
 
 const FILE_FOLDERS = {
@@ -270,17 +279,47 @@ const PHOTO_FOLDERS = {
     action: 'ActionPhotos'
 };
 function openPmlModal(item) {
-  // $('#control_no').val(item.control_no);
-  const control_no = item.control_no;
-  $('#progress').val(item.pms_create);
-  $('#time').text(item.issued_date);
-  $('#pic').text(item.person_incharge);
-  $('#title').text(item.problem_name);
 
-  $('#pms_part_code').text(item.part_code);
-  $('#pms_part_name').text(item.part_name);
-  $('#pms_supplier_name').text(item.supplier);
+    const control_no = item.control_no;
 
+    $('#progress').val(item.pms_create);
+    $('#time').text(item.issued_date);
+
+    $('#title').text(item.problem_name);
+    $('#pms_part_code').text(item.part_code);
+    $('#pms_part_name').text(item.part_name);
+    $('#pms_supplier_name').text(item.supplier);
+    fetch('/Home/get_userlist')
+        .then(res => res.json())
+        .then(data => {
+
+            const formatted = data.map(u => ({
+                id: u.name,
+                text: u.name
+            }));
+
+            // destroy old
+            if ($('#pic').hasClass("select2-hidden-accessible")) {
+                $('#pic').select2('destroy');
+            }
+
+            $('#pic').select2({
+                data: formatted,
+                placeholder: "Select Person Incharge",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#pmlModal')
+            });
+
+            const selected = data.find(u => u.name === item.person_incharge);
+
+            if (selected) {
+                $('#pic').val(selected.name).trigger('change');
+            } else {
+                console.warn("No match found for:", item.person_incharge);
+            }
+
+        });
 
     loadpheno(control_no);
     loadAnalysis(control_no);
@@ -290,7 +329,7 @@ function openPmlModal(item) {
     loadhorizontal(control_no);
     loadb_action(control_no);
 
-  $('#pmlModal').modal('show');
+    $('#pmlModal').modal('show');
 }
 
 //function viewAttachment(filename, steps) {
@@ -376,26 +415,41 @@ function pmsModal() {
     String(now.getMinutes()).padStart(2, '0') +
     String(now.getSeconds()).padStart(2, '0');
 
-  const controlNo = `${model}-${dateStr}`;
+  //const controlNo = `${model}-${dateStr}`;
 
-  document.getElementById('control_no').innerText = controlNo;
+  //document.getElementById('control_no').innerText = controlNo;
 
   document.getElementById('model_hidden').value = model;
   document.getElementById('stage_hidden').value = stage;
-  document.getElementById('control_no_hidden').value = controlNo;
+    //document.getElementById('control_no_hidden').value = controlNo;
 
+
+    getControlNo(model);
 
 
   $('#pmsModal').modal('show');
 }
 
-// ================= PHOTO UPLOAD (ALIGNED + FIXED) =================
+
+//function getControlNo(stage){
+//    $.post('/Home/get_latestcontrolNo', function (response) {
+
+//    })
+//}
+function getControlNo(stage) {
+    $.post('/Home/get_latestcontrolNo', { stage: stage }, function (response) {
+        if (response.success) {
+            document.getElementById('control_no').innerText = response.control_no;
+            document.getElementById('control_no_hidden').value = response.control_no;
+        }
+    });
+}
+
+
 const photoDrop = document.getElementById('photoDrop');
 const photoInput = document.getElementById('problem_photos');
 
 let selectedFiles = [];
-
-// Render preview grid
 function renderPreview() {
     photoDrop.innerHTML = '';
 
@@ -518,7 +572,6 @@ function savePMS() {
 
                 form.reset();
 
-                // reset preview
                 selectedFiles = [];
                 renderPreview();
 
@@ -567,14 +620,14 @@ function viewPhoto(filename, type = 'problem') {
         html: `
             <img 
                 src="upload/${folder}/${filename}" 
-                style="max-width:100%; max-height:80vh; border-radius:10px;"
-            >
+                style="max-width:100%; max-height:80vh; border-radius:10px;">
         `,
         width: 'auto',
         showCloseButton: true,
         showConfirmButton: false
     });
 }
+
 //function savePMS() {
 
 //    phenomenonEditor.save().then((outputData) => {
@@ -693,3 +746,30 @@ $(document).ready(function () {
 
     });
 })
+
+//function getuserlist() {
+
+//}
+
+
+$(document).ready(function () {
+
+    fetch('/Home/get_userlist')
+        .then(res => res.json())
+        .then(data => {
+
+            const formatted = data.map(item => ({
+                id: item.empno,
+                text: item.name
+            }));
+
+            $('#person_incharge').select2({
+                data: formatted,
+                placeholder: "Select Person Incharge",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#pmsModal')
+            });
+
+        });
+});

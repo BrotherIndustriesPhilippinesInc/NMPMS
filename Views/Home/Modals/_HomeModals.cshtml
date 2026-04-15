@@ -169,16 +169,18 @@
                                         <option value="Cancel">Cancel</option>
                                     </select>
 
-                                    <input type="text"
+                              @*       <input type="text"
                                            class="form-control form-control-sm"
                                            id="person_incharge"
                                            value="@ViewBag.UserId"
-                                           disabled>
+                                           disabled> *@
+
+
+                                    <select class="form-select form-select-sm mb-2" id="person_incharge">
+                                        <option value="">Select Person Incharge</option>
+                                    </select>
                                      <input hidden id="stepno" value="1"/>
-                                     <script>
-                                        var userId = '@Context.Session.GetString("username")';
-                                        document.getElementById("person_incharge").value = userId;
-                                     </script>
+                                   
                                 </div>
 
                                 <div class="col-md-6 text-end">
@@ -275,8 +277,8 @@
 
                                         <div class="col-md-6">
                                             <label class="form-label">Issued By</label>
-                                            <input class="form-control form-control-sm"
-                                                   id="issued_by" name="issued_by">
+                                            <input class="form-control form-control-sm" value="@ViewBag.UserId"
+                                                   id="issued_by" name="issued_by" readonly>
                                         </div>
 
                                         <div class="col-md-6">
@@ -290,11 +292,11 @@
                                 <div class="pms-section">
                                     <div class="pms-title">Parts Related</div>
                                     <input type="text" class="form-control form-control-sm mb-1"
-                                           id="part_code" name="part_code" placeholder="Part Code">
+                                           id="part_code" name="part_code" placeholder="Part Code" style="text-transform: uppercase;">
                                     <input type="text" class="form-control form-control-sm mb-1"
-                                           id="part_name" name="part_name" placeholder="Part Name">
+                                           id="part_name" name="part_name" placeholder="Part Name" style="text-transform: uppercase;">
                                     <input type="text" class="form-control form-control-sm"
-                                           id="supplier" name="supplier" placeholder="Supplier">
+                                           id="supplier" name="supplier" placeholder="Supplier" style="text-transform: uppercase;">
                                 </div>
                             </div>
                         </div>
@@ -339,7 +341,11 @@
         </div>
     </div>
 </div>
-
+<script>
+    var userId = '@Context.Session.GetString("username")';
+    document.getElementById("person_incharge").value = userId;
+    document.getElementById("issued_by").value = userId;
+</script>
 <script>
   // const phenomenonEditor = new EditorJS({
   //   holder: "phenomenon_editor",

@@ -16,7 +16,27 @@ function loadper(controlNo) {
                 document.getElementById("s5_pic").value = per.s5_pic || "";
                 document.getElementById("s5_implematation_Date").value = per.s5_impdate || "";
                 //document.getElementById("s5_implematation_Date").value = per.s5_impdate ? per.s5_impdate.split("T")[0] : "";
+                if (per.s5_attachment != null) {
 
+                    const fileName = per.s5_attachment.split(/[/\\]/).pop();
+
+                    $('#s5_attachmentPreviewContainer').html(`
+                            <div class="mt-1 text-muted small">
+                                ${fileName}
+                            </div>
+                            <button class="btn btn-sm btn-primary mt-2"
+                                    onclick="viewAttachment('${per.s5_attachment}','5')">
+                                View Attachment
+                            </button>
+                        `);
+
+                } else {
+
+                    $('#s5_attachmentPreviewContainer').html(
+                        '<small class="text-muted">No Attachment</small>'
+                    );
+
+                }
             }
 
         });

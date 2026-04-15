@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NMPMS.Controllers;
 using Npgsql;
+using System.Diagnostics;
+using System.Net.Mail;
 
 namespace NMPMS.Controllers
 {
@@ -55,12 +57,16 @@ namespace NMPMS.Controllers
             string pms_area = form["pms_area"];
             string pms_process = form["pms_process"];
             string pms_issued_by = form["pms_issued_by"];
+            string pic = form["pic"];
+            string pms_partcode = form["pms_partcode"];
+            string pms_partname = form["pms_partname"];
+            string pms_supplier = form["pms_supplier"];
             //string pms_process = form["pms_process"];
 
             using (var con = _db.GetConnection())
             {
                 await con.OpenAsync();
-                string sql = @"UPDATE pms_records SET pms_create = @progress, problem_name = @pms_name WHERE control_no = @control_no";
+                string sql = @"UPDATE pms_records SET pms_create = @progress, problem_name = @pms_name, person_incharge = @pic, part_code = @partcode, part_name = @pms_partname, supplier = @pms_supplier WHERE control_no = @control_no";
                 using (var cmd = new NpgsqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@control_no", controlNo ?? "");
@@ -70,7 +76,10 @@ namespace NMPMS.Controllers
                     cmd.Parameters.AddWithValue("@replace_photo", replace_photo ?? "");
                     cmd.Parameters.AddWithValue("@pms_area", pms_area ?? "");
                     cmd.Parameters.AddWithValue("@pms_process", pms_process ?? "");
-                    cmd.Parameters.AddWithValue("@pms_issued_by", pms_issued_by ?? "");
+                    cmd.Parameters.AddWithValue("@pic", pic ?? "");
+                    cmd.Parameters.AddWithValue("@partcode", pms_partcode ?? "");
+                    cmd.Parameters.AddWithValue("@pms_partname", pms_partname ?? "");
+                    cmd.Parameters.AddWithValue("@pms_supplier", pms_supplier ?? "");
                     await cmd.ExecuteNonQueryAsync();
                 }
                 return Json(new { status = "success", message = "Phenomenon saved successfully" });
@@ -113,8 +122,6 @@ namespace NMPMS.Controllers
 
                         if (!allowedExtensions.Contains(extension))
                             continue;
-
-                        // 🔥 unique filename (safe)
                         string uniqueFileName = $"{controlNo}_{Guid.NewGuid()}{extension}";
                         string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
@@ -201,14 +208,10 @@ namespace NMPMS.Controllers
                         cmd.Parameters.AddWithValue("@analysis_by", analysis_by ?? "");
                         cmd.Parameters.AddWithValue("@problem_rank", problem_rank ?? "");
                         cmd.Parameters.AddWithValue("@defect_attachment", attachmentPath ?? "");
-
-                        // 🔥 DO NOT store single image string anymore
                         cmd.Parameters.AddWithValue("@cause_photo", DBNull.Value);
 
                         await cmd.ExecuteNonQueryAsync();
                     }
-
-                    // ================= SAVE EACH IMAGE =================
                     foreach (var path in analysisFilePaths)
                     {
                         string fileSql = @"INSERT INTO pms_problem_files (control_no, file_path, steps)
@@ -224,6 +227,153 @@ namespace NMPMS.Controllers
                             await fileCmd.ExecuteNonQueryAsync();
                         }
                     }
+                }
+
+                string link = $"http://apbiphbpsts01:2026/";
+                string formattedDate = finish_date?.ToString("dd-MMM") ?? "";
+
+                using (MailMessage mail = new MailMessage())
+                {
+                    mail.From = new MailAddress("nmpms@brother-biph.com.ph", "[BIPH_NMPMS] Analysis Cause New Problem Information");
+                    //mail.To.Add("jeffrey.reyes@brother-biph.com.ph");
+                    mail.To.Add("charisse.devera@brother-biph.com.ph");
+                    mail.To.Add("bheanicole.corcolon@brother-biph.com.ph");
+                    
+                    mail.CC.Add("jeffrey.reyes@brother-biph.com.ph");
+                    mail.CC.Add("arravellah.magsino@brother-biph.com.ph");
+                    mail.Subject = "[BIPH_NMPMS] Analysis Cause New Problem Information";
+                    mail.IsBodyHtml = true;
+
+                    List<LinkedResource> imageResources = new List<LinkedResource>();
+                    string imageHtml = "";
+                    int imgIndex = 1;
+
+                    foreach (var path in analysisFilePaths)
+                    {
+                        string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path);
+
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            string cid = $"analysisImg{imgIndex}";
+
+                            LinkedResource img = new LinkedResource(fullPath);
+                            img.ContentId = cid;
+                            img.TransferEncoding = System.Net.Mime.TransferEncoding.Base64;
+
+                            imageResources.Add(img);
+
+                            imageHtml += $@"
+                        <div style='display:inline-block; margin:5px;'>
+                            <img src='cid:{cid}' style='width:30px; height:30; object-fit:cover; border-radius:8px;' />
+                        </div>";
+
+                            imgIndex++;
+                        }
+                    }
+
+                    string body = $@"
+                        <div style='font-family:Segoe UI, Arial, sans-serif; background:#f4f6f9; padding:20px;'>
+
+                            <div style='max-width:700px; margin:auto; background:#ffffff; border-radius:10px; 
+                                        box-shadow:0 4px 15px rgba(0,0,0,0.1); overflow:hidden;'>
+
+                                <div style='background:#1f2937; color:#fff; padding:15px 20px; font-size:18px; font-weight:bold;'>
+                                    BIPH New Model Problem Management System
+                                </div>
+
+                                <div style='padding:20px; color:#333;'>
+
+                                    <h2 style='margin-top:0; color:#111827;'>New Problem Notification</h2>
+
+                                    <table style='width:100%; border-collapse:collapse; font-size:14px;'>
+
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Problem Control #:</td>
+                                            <td style='padding:8px;'>#{controlNo}</td>
+                                        </tr>
+
+                                        <tr style='background:#f9fafb;'>
+                                            <td style='padding:8px; font-weight:bold;'>Analysis Cause:</td>
+                                            <td style='padding:8px;'>{analysis_cause}</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Analysis By:</td>
+                                            <td style='padding:8px;'>{analysis_by}</td>
+                                        </tr>
+
+                                        <tr style='background:#f9fafb;'>
+                                            <td style='padding:8px; font-weight:bold;'>Problem Rank:</td>
+                                            <td style='padding:8px;'>{problem_rank}</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Finish Analysis Date:</td>
+                                            <td style='padding:8px;'>{formattedDate}</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Image Cause:</td>
+                                            <td style='padding:8px;'>{imageHtml}</td>
+                                        </tr>
+
+                                    </table>
+
+                                    <div style='text-align:center; margin:25px 0;'>
+                                        <a href='{link}' style='background:#2563eb; color:#fff; padding:12px 20px; 
+                                           text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
+                                            View Full Details
+                                        </a>
+                                    </div>
+
+                                    <!-- Signature -->
+                                    <div style='margin-top:30px; border-top:1px solid #e5e7eb; padding-top:15px;'>
+                                        <table>
+                                            <tr>
+                                               
+                                                <td style='font-size:13px; color:#374151;'>
+                                                    <b>BIPH DE Concurrent</b><br>
+                                                    New Model Problem Management System<br>
+                                                    Brother Industries (Philippines) Inc.<br>
+                                                    
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+
+                                      <img src='cid:signatureImage' width='200' />
+
+                                    <div style='font-size:12px; color:#6b7280; margin-top:15px;'>
+                                        This is an automated message. Please do not reply.
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>";
+
+                    // Create AlternateView
+                    AlternateView altView = AlternateView.CreateAlternateViewFromString(body, null, "text/html");
+
+                    foreach (var img in imageResources)
+                    {
+                        altView.LinkedResources.Add(img);
+                    }
+                    // Attach Image
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/phishing.png"); // adjust path
+                    LinkedResource signature = new LinkedResource(imagePath, "image/png");
+                    signature.ContentId = "signatureImage";
+
+                    altView.LinkedResources.Add(signature);
+                    mail.AlternateViews.Add(altView);
+
+                    using (SmtpClient smtp = new SmtpClient("smtp.brother.co.jp", 25))
+                    {
+                        smtp.UseDefaultCredentials = true;
+                        smtp.EnableSsl = false;
+
+                        await smtp.SendMailAsync(mail);
+                    }
+
                 }
 
                 return Json(new { status = "success", message = "Analysis saved successfully" });
@@ -466,6 +616,27 @@ namespace NMPMS.Controllers
             if (!string.IsNullOrWhiteSpace(form["s5_implematation_Date"]))
                 action_date = DateTime.Parse(form["s5_implematation_Date"]);
 
+            string attachmentPath = null;
+            var attachmentFile = form.Files["s5_detail_attachment"];
+
+            if (attachmentFile != null && attachmentFile.Length > 0)
+            {
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "upload", "PermanentFile");
+
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                string uniqueFileName = controlNo + Path.GetExtension(attachmentFile.FileName);
+                var filePath = Path.Combine(folder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await attachmentFile.CopyToAsync(stream);
+                }
+
+                attachmentPath = Path.Combine("upload/PermanentFile/", uniqueFileName);
+            }
+
 
             using (var con = _db.GetConnection())
             {
@@ -479,7 +650,9 @@ namespace NMPMS.Controllers
                                 system, 
                                 implementation_date, 
                                 pic, 
-                                date_added)
+                                date_added,
+                                per_attachment
+                                )
                                 VALUES(
                                 @control_no,
                                 @assembly,
@@ -488,8 +661,8 @@ namespace NMPMS.Controllers
                                 @system,
                                 @action_date,
                                 @added_by,
-                                NOW()
-                                
+                                NOW(),
+                                @attachmentpath
                                 );";
 
                 using (var cmd = new NpgsqlCommand(sql, con))
@@ -501,6 +674,7 @@ namespace NMPMS.Controllers
                     cmd.Parameters.AddWithValue("@system", system ?? "");
                     cmd.Parameters.AddWithValue("@action_date", action_date ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@added_by", pic ?? "");
+                    cmd.Parameters.AddWithValue("@attachmentpath", attachmentPath ?? "");
                     await cmd.ExecuteNonQueryAsync();
                 }
             }

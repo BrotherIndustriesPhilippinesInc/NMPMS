@@ -13,7 +13,7 @@
 <div class="row mb-3">
     <div class="col-md-3">
         <label class="form-label">Select Model</label>
-        <select class="form-control model-select">
+        <select id="modelSelect" class="form-control model-select">
             <option value="">Select Model</option>
             <option value="S21">S21</option>
             <option value="M21">M21</option>
@@ -27,10 +27,9 @@
     </div>
 
     
-
     <div class="col-md-3">
         <label class="form-label">Select Stage</label>
-        <select class="form-control stage-select">
+        <select id="stageSelect" class="form-control stage-select">
             <option value="">Select Stage</option>
             <option value="Development Trial 1">Development Trial 1</option>
             <option value="Development Trial 2">Development Trial 2</option>
@@ -51,20 +50,21 @@
     </div>
 </div>
 
+
+@* <div class="divider"></div> *@
 <!-- HEADER TABLE -->
 <div class="model-header mt-4">
     <div class="modern-header">
         <div class="header-item">
-            <span class="label">Model</span>
+            @* <span class="label">Model</span> *@
             <span class="value" id="thModel">—</span>
             <input id="modelInput" hidden>
 
         </div>
 
-        <div class="divider"></div>
 
         <div class="header-item">
-            <span class="label">Stage</span>
+            @* <span class="label">Stage</span> *@
             <span class="value" id="thStage">—</span>
             <input id="stageInput" hidden>
         </div>
@@ -257,6 +257,48 @@
             console.warn("WebView2 not available. Ensure you're running in a WebView2 environment.");
         }
     }
+
+        $(document).ready(function () {
+
+        // Initialize Select2
+        $('#modelSelect').select2({
+            placeholder: "Select Model",
+            width: '100%',
+            tags: true // optional: allow user to add new
+        });
+
+        $('#stageSelect').select2({
+            placeholder: "Select Stage",
+            width: '100%',
+            tags: true
+        });
+
+        // Fetch additional options
+        fetch('/Home/additionalOptions')
+            .then(res => res.json())
+            .then(data => {
+
+                // MODELS
+                data.models.forEach(item => {
+                    // prevent duplicate
+                    if ($("#modelSelect option[value='" + item + "']").length === 0) {
+                        $('#modelSelect').append(new Option(item, item));
+                    }
+                });
+
+                // STAGES
+                data.stages.forEach(item => {
+                    if ($("#stageSelect option[value='" + item + "']").length === 0) {
+                        $('#stageSelect').append(new Option(item, item));
+                    }
+                });
+
+                // Refresh Select2
+                $('#modelSelect').trigger('change');
+                $('#stageSelect').trigger('change');
+            })
+            .catch(err => console.error(err));
+    });
 </script>
 
 

@@ -6,6 +6,8 @@ using Npgsql;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Net;
+using Org.BouncyCastle.Asn1.Crmf;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace NMPMS.Controllers;
 
 public class HomeController : Controller
@@ -164,6 +166,49 @@ public class HomeController : Controller
     }
 
     [HttpPost]
+    public async Task<IActionResult> get_latestcontrolNo(string stage)
+    {
+        string controlNo;
+
+        using (var con = _db.GetConnection())
+        {
+            await con.OpenAsync();
+
+            using (var check = new NpgsqlCommand("SELECT control_no FROM pms_records ORDER BY ID DESC LIMIT 1", con))
+            {
+                var result = await check.ExecuteScalarAsync();
+
+                if (result != null)
+                {
+                    string lastControlNo = result.ToString();
+
+                    // Example format: STAGE-0001
+                    var parts = lastControlNo.Split('-');
+
+                    int lastNumber = 0;
+
+                    if (parts.Length > 1 && int.TryParse(parts[1], out lastNumber))
+                    {
+                        lastNumber++;
+                    }
+                    else
+                    {
+                        lastNumber = 1;
+                    }
+
+                    controlNo = $"{stage}-{lastNumber.ToString("D4")}";
+                }
+                else
+                {
+                    controlNo = $"{stage}-0001";
+                }
+            }
+        }
+
+        return Json(new { success = true, control_no = controlNo });
+    }
+
+    [HttpPost]
     public async Task<IActionResult> CreateIssue(IFormCollection form)
     {
         try
@@ -181,13 +226,17 @@ public class HomeController : Controller
             string partName = form["part_name"];
             string supplier = form["supplier"];
             string controlNo = form["control_no"];
+            //string controlNo ;
             string stepno = form["stepno"];
+            //string serialNumber;
 
             DateTime? issuedDate = null;
             if (!string.IsNullOrWhiteSpace(form["issued_date"]))
             {
                 issuedDate = DateTime.Parse(form["issued_date"]);
             }
+
+            //string serialNumber = 
 
             //string personInCharge = "Jeffrey Reyes";
             var personInCharge = HttpContext.Session.GetString("username"); 
@@ -251,7 +300,10 @@ public class HomeController : Controller
 
             using (var con = _db.GetConnection())
             {
+
                 await con.OpenAsync();
+               
+                
                 string sql = @"INSERT INTO pms_records (
                 pms_create,
                 person_incharge,
@@ -333,85 +385,103 @@ public class HomeController : Controller
                 mail.Subject = "[BIPH_NMPMS] " + model + " " + stage + " New Problem Information";
                 mail.IsBodyHtml = true;
 
-                mail.Body = $@"
-                    <div style='font-family:Segoe UI, Arial, sans-serif; background:#f4f6f9; padding:20px;'>
+                string body = $@"
+                        <div style='font-family:Segoe UI, Arial, sans-serif; background:#f4f6f9; padding:20px;'>
 
-                        <div style='max-width:700px; margin:auto; background:#ffffff; border-radius:10px; 
-                                    box-shadow:0 4px 15px rgba(0,0,0,0.1); overflow:hidden;'>
+                            <div style='max-width:700px; margin:auto; background:#ffffff; border-radius:10px; 
+                                        box-shadow:0 4px 15px rgba(0,0,0,0.1); overflow:hidden;'>
 
-                            <!-- Header -->
-                            <div style='background:#1f2937; color:#fff; padding:15px 20px; font-size:18px; font-weight:bold;'>
-                                BIPH New Model Problem Management System
-                            </div>
+                                <div style='background:#1f2937; color:#fff; padding:15px 20px; font-size:18px; font-weight:bold;'>
+                                    BIPH New Model Problem Management System
+                                </div>
 
-                            <!-- Body -->
-                            <div style='padding:20px; color:#333;'>
+                                <div style='padding:20px; color:#333;'>
 
-                                <h2 style='margin-top:0; color:#111827;'>New Problem Notification</h2>
+                                    <h2 style='margin-top:0; color:#111827;'>New Problem Notification</h2>
 
-                                <table style='width:100%; border-collapse:collapse; font-size:14px;'>
+                                    <table style='width:100%; border-collapse:collapse; font-size:14px;'>
 
-                                    <tr>
-                                        <td style='padding:8px; font-weight:bold;'>Problem Control #:</td>
-                                        <td style='padding:8px;'>#{controlNo}</td>
-                                    </tr>
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Problem Control #:</td>
+                                            <td style='padding:8px;'>#{controlNo}</td>
+                                        </tr>
 
-                                    <tr style='background:#f9fafb;'>
-                                        <td style='padding:8px; font-weight:bold;'>Problem Name:</td>
-                                        <td style='padding:8px;'>{problemName}</td>
-                                    </tr>
+                                        <tr style='background:#f9fafb;'>
+                                            <td style='padding:8px; font-weight:bold;'>Problem Name:</td>
+                                            <td style='padding:8px;'>{problemName}</td>
+                                        </tr>
 
-                                    <tr>
-                                        <td style='padding:8px; font-weight:bold;'>Process:</td>
-                                        <td style='padding:8px;'>{process}</td>
-                                    </tr>
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Process:</td>
+                                            <td style='padding:8px;'>{process}</td>
+                                        </tr>
 
-                                    <tr style='background:#f9fafb;'>
-                                        <td style='padding:8px; font-weight:bold;'>Encountered Date:</td>
-                                        <td style='padding:8px;'>{formattedDate}</td>
-                                    </tr>
+                                        <tr style='background:#f9fafb;'>
+                                            <td style='padding:8px; font-weight:bold;'>Encountered Date:</td>
+                                            <td style='padding:8px;'>{formattedDate}</td>
+                                        </tr>
 
-                                    <tr>
-                                        <td style='padding:8px; font-weight:bold;'>Serial Number:</td>
-                                        <td style='padding:8px;'>{serialNumber}</td>
-                                    </tr>
+                                        <tr>
+                                            <td style='padding:8px; font-weight:bold;'>Serial Number:</td>
+                                            <td style='padding:8px;'>{serialNumber}</td>
+                                        </tr>
 
-                                    <tr style='background:#f9fafb;'>
-                                        <td style='padding:8px; font-weight:bold;'>Area of Detection:</td>
-                                        <td style='padding:8px;'>{areaDetection}</td>
-                                    </tr>
+                                        <tr style='background:#f9fafb;'>
+                                            <td style='padding:8px; font-weight:bold;'>Area of Detection:</td>
+                                            <td style='padding:8px;'>{areaDetection}</td>
+                                        </tr>
 
-                                </table>
+                                    </table>
 
-                                <!-- Phenomenon -->
-                                <div style='margin-top:20px;'>
-                                    <strong>Phenomenon Details:</strong>
-                                    <div style='margin-top:8px; padding:12px; background:#f3f4f6; border-radius:6px;'>
-                                        {phenomenonDetails}
+                                    <div style='margin-top:20px;'>
+                                        <strong>Phenomenon Details:</strong>
+                                        <div style='margin-top:8px; padding:12px; background:#f3f4f6; border-radius:6px;'>
+                                            {phenomenonDetails}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Button -->
-                                <div style='text-align:center; margin:25px 0;'>
-                                    <a href='{link}' style='background:#2563eb; color:#fff; padding:12px 20px; 
-                                       text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
-                                        View Full Details
-                                    </a>
-                                </div>
+                                    <div style='text-align:center; margin:25px 0;'>
+                                        <a href='{link}' style='background:#2563eb; color:#fff; padding:12px 20px; 
+                                           text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>
+                                            View Full Details
+                                        </a>
+                                    </div>
 
-                                <!-- Footer -->
-                                <div style='font-size:12px; color:#6b7280; border-top:1px solid #e5e7eb; padding-top:15px;'>
-                                    This is an automated message from <b>BIPH New Model Problem Management System</b><br>
-                                    Please do not reply.
-                                    <br><br>
-                                    Regards,<br>
-                                    <b>BIPH DE Concurrent</b>
-                                </div>
+                                    <!-- Signature -->
+                                    <div style='margin-top:30px; border-top:1px solid #e5e7eb; padding-top:15px;'>
+                                        <table>
+                                            <tr>
+                                               
+                                                <td style='font-size:13px; color:#374151;'>
+                                                    <b>BIPH DE Concurrent</b><br>
+                                                    New Model Problem Management System<br>
+                                                    Brother Industries (Philippines) Inc.<br>
+                                                    
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
 
+                                      <img src='cid:signatureImage' width='200' />
+
+                                    <div style='font-size:12px; color:#6b7280; margin-top:15px;'>
+                                        This is an automated message. Please do not reply.
+                                    </div>
+
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    ";
+                        </div>";
+
+                // Create AlternateView
+                AlternateView altView = AlternateView.CreateAlternateViewFromString(body, null, "text/html");
+
+                // Attach Image
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/phishing.png"); // adjust path
+                LinkedResource signature = new LinkedResource(imagePath, "image/png");
+                signature.ContentId = "signatureImage";
+
+                altView.LinkedResources.Add(signature);
+                mail.AlternateViews.Add(altView);
 
                 using (SmtpClient smtp = new SmtpClient("smtp.brother.co.jp", 25))
                 {
@@ -420,7 +490,8 @@ public class HomeController : Controller
 
                     await smtp.SendMailAsync(mail);
                 }
-            }
+            
+        }
 
             return Json(new { status = "success", control_no = controlNo });
         }
@@ -476,5 +547,72 @@ public class HomeController : Controller
         return Ok(list);
     }
 
+
+    [HttpGet]
+    public IActionResult get_userlist()
+    {
+        var list = new List<object>();
+        using (var con = _db.GetConnection())
+        {
+            con.Open();
+            string sql = @"SELECT * FROM tbl_users where user_status = 1";
+
+            using (var cmd = new NpgsqlCommand(sql, con))
+            {
+                using (var row = cmd.ExecuteReader())
+                {
+                    while (row.Read())
+                    {
+                        list.Add(new
+                        {
+                            name = row["name"].ToString(),
+                            empno = row["empno"].ToString()
+                        });
+                        //row["name"].ToString();
+                    }
+                }
+            }
+            return Ok(list);
+
+        }
+
+    }
+
+
+    [HttpGet]
+    public IActionResult additionalOptions()
+    {
+        var models = new List<string>();
+        var stages = new List<string>();
+
+        using (var con = _db.GetConnection())
+        {
+            con.Open();
+
+            // Models
+            string sql = @"SELECT model_name FROM tbl_model";
+            using (var cmd = new NpgsqlCommand(sql, con))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    models.Add(reader["model_name"].ToString());
+                }
+            }
+
+            // Stages
+            string sql2 = @"SELECT stage_name FROM tbl_stage";
+            using (var cmd = new NpgsqlCommand(sql2, con))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    stages.Add(reader["stage_name"].ToString());
+                }
+            }
+        }
+
+        return Ok(new { models, stages });
+    }
 
 }

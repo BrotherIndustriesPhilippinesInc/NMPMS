@@ -144,6 +144,11 @@ document.getElementById("saveBtn").addEventListener("click", function () {
         formData.append("pms_area", document.getElementById("pms_area").value);
         formData.append("pms_process", document.getElementById("pms_process").value);
         formData.append("pms_issued_by", document.getElementById("pms_issued_by").value);
+        formData.append("pic", document.getElementById("pic").value);
+        formData.append("pms_partcode", document.getElementById("pms_partcode").value);
+        formData.append("pms_partname", document.getElementById("pms_partname").value);
+        formData.append("pms_supplier", document.getElementById("pms_supplier").value);
+        
     }
 
     else if (currentStep === 2) {
@@ -218,7 +223,7 @@ document.getElementById("saveBtn").addEventListener("click", function () {
         formData.append("s4_parts", document.getElementById("s4_parts").value);
         formData.append("s4_machine", document.getElementById("s4_machine").value);
         formData.append("s4_system", document.getElementById("s4_system").value);
-        formData.append("s4_detail_action_by", document.getElementById("s4_detail_action_by").value);
+        formData.append("s4_detail_action_by", document.getElementById("s4_pic").value);
         formData.append("implematation_Date", document.getElementById("implematation_Date").value);
         const s4_detail_attachment = document.getElementById("s4_detail_attachment").files[0];
         if (s4_detail_attachment) formData.append("s4_detail_attachment", s4_detail_attachment);
@@ -230,7 +235,9 @@ document.getElementById("saveBtn").addEventListener("click", function () {
         formData.append("s5_machine", document.getElementById("s5_machine").value);
         formData.append("s5_system", document.getElementById("s5_system").value);
         formData.append("s5_pic", document.getElementById("s5_pic").value);
-        formData.append("s5_implematation_Date", document.getElementById("s5_implematation_Date").value);
+        formData.append("s5_implematation_Date", document.getElementById("s5_implematation_Date").value); 
+        const s5_detail_attachment = document.getElementById("s5_detail_attachment").files[0];
+        if (s5_detail_attachment) formData.append("s5_detail_attachment", s5_detail_attachment);
     }
 
     else if (currentStep == 6) {
@@ -343,11 +350,14 @@ function setEditMode() {
     modal.classList.remove('view-mode');
 
     modal.querySelectorAll('input, textarea, select').forEach(el => {
-        el.removeAttribute('readonly');
-        el.removeAttribute('disabled');
+        //el.removeAttribute('readonly');
+        //el.removeAttribute('disabled');
+        if (!el.dataset.readonly) {
+            el.removeAttribute('readonly');
+            el.removeAttribute('disabled');
+        }
     });
 
-    // 🔥 SHOW upload, HIDE gallery
     document.getElementById("photoPreviewContainer1").classList.add("d-none");
     document.getElementById("photoDrop_analysis").classList.remove("d-none");
 

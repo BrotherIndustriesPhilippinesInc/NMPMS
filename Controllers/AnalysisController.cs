@@ -58,6 +58,10 @@ namespace NMPMS.Controllers
                                         pms_area = reader["area_detection"]?.ToString(),
                                         pms_process = reader["process"]?.ToString(),
                                         pms_issued_by = reader["issued_by"]?.ToString(),
+                                        pms_partcode = reader["part_code"]?.ToString(),
+                                        pms_partname = reader["part_name"]?.ToString(),
+                                        supplier = reader["supplier"]?.ToString(),
+                                        pic = reader["person_incharge"]?.ToString(),
 
                                     }
                                 });
@@ -298,6 +302,7 @@ namespace NMPMS.Controllers
                                         s5_machine = reader["machine"]?.ToString(),
                                         s5_system = reader["system"]?.ToString(),
                                         s5_impdate = reader["implementation_date"]?.ToString(),
+                                        s5_attachment = reader["per_attachment"]?.ToString(),
                                         s5_pic = reader["pic"]?.ToString(),
                                     }
                                 });
